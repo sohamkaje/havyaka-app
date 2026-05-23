@@ -2,8 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @State private var timeRemaining = TimeComponents()
-
-    let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -17,6 +16,7 @@ struct HomeView: View {
                     heroSection
                     countdownBar
                     quickAccessGrid
+                    youthSection
                     starAttractions
                     Spacer().frame(height: 90)
                 }
@@ -28,8 +28,7 @@ struct HomeView: View {
     // MARK: - Hero
     var heroSection: some View {
         ZStack(alignment: .bottomLeading) {
-            HAA.Colors.charcoal
-                .overlay(diagonalPattern)
+            HAA.Colors.charcoal.overlay(diagonalPattern)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("July 3 – 5, 2026  ·  Aurora, Illinois")
@@ -66,7 +65,7 @@ struct HomeView: View {
     }
 
     var diagonalPattern: some View {
-        GeometryReader { geo in
+        GeometryReader { _ in
             Canvas { ctx, size in
                 ctx.stroke(
                     Path { path in
@@ -82,7 +81,7 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Countdown
+    // MARK: - Countdown (seconds-level, fires every 1s)
     var countdownBar: some View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 2) {
@@ -93,18 +92,19 @@ struct HomeView: View {
             }
             Spacer()
             HStack(spacing: 2) {
-                countUnit(value: String(format: "%02d", timeRemaining.days), label: "days")
+                countUnit(value: String(format: "%02d", timeRemaining.days),    label: "days")
                 colonSep
-                countUnit(value: String(format: "%02d", timeRemaining.hours), label: "hrs")
+                countUnit(value: String(format: "%02d", timeRemaining.hours),   label: "hrs")
                 colonSep
                 countUnit(value: String(format: "%02d", timeRemaining.minutes), label: "min")
+                colonSep
+                countUnit(value: String(format: "%02d", timeRemaining.seconds), label: "sec")
             }
         }
         .padding(.horizontal, HAA.Spacing.lg)
         .padding(.vertical, 14)
         .background(
-            RoundedRectangle(cornerRadius: 0)
-                .fill(HAA.Colors.goldLight)
+            HAA.Colors.goldLight
                 .overlay(
                     Rectangle()
                         .fill(HAA.Colors.gold.opacity(0.15))
@@ -118,92 +118,142 @@ struct HomeView: View {
 
     var colonSep: some View {
         Text(":")
-            .font(.system(size: 18, weight: .bold, design: .monospaced))
+            .font(.system(size: 16, weight: .bold, design: .monospaced))
             .foregroundColor(HAA.Colors.gold)
     }
 
     func countUnit(value: String, label: String) -> some View {
         VStack(spacing: 1) {
             Text(value)
-                .font(.system(size: 22, weight: .bold, design: .monospaced))
+                .font(.system(size: 20, weight: .bold, design: .monospaced))
                 .foregroundColor(HAA.Colors.charcoal)
             Text(label)
-                .font(.system(size: 9, weight: .semibold, design: .rounded))
-                .tracking(0.5)
+                .font(.system(size: 8, weight: .semibold, design: .rounded))
+                .tracking(0.4)
                 .foregroundColor(HAA.Colors.muted)
         }
-        .frame(minWidth: 40)
+        .frame(minWidth: 32)
     }
 
     // MARK: - Quick Access
     var quickAccessGrid: some View {
         VStack(alignment: .leading, spacing: 0) {
             SectionHeader(title: "Quick Access")
-
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
-                QuickCard(icon: "calendar.badge.clock", label: "Schedule", sub: "3-day full program", color: HAA.Colors.orange)
-                QuickCard(icon: "map.fill", label: "Locations", sub: "Hotels & venue", color: HAA.Colors.gold)
-                QuickCard(icon: "photo.stack.fill", label: "Photos", sub: "Share memories", color: HAA.Colors.orange)
-                QuickCard(icon: "info.circle.fill", label: "Convention Info", sub: "Committees & FAQ", color: HAA.Colors.gold)
+                QuickCard(icon: "calendar.badge.clock", label: "Schedule",        sub: "3-day full program",  color: HAA.Colors.orange)
+                QuickCard(icon: "map.fill",             label: "Locations",       sub: "Hotels & venue",      color: HAA.Colors.gold)
+                QuickCard(icon: "photo.stack.fill",     label: "Photos",          sub: "Share memories",      color: HAA.Colors.orange)
+                QuickCard(icon: "info.circle.fill",     label: "Convention Info", sub: "Committees & FAQ",    color: HAA.Colors.gold)
             }
             .padding(.horizontal, HAA.Spacing.lg)
         }
     }
 
-    // MARK: - Star Attractions
+    // MARK: - Youth Committee Section
+    var youthSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            SectionHeader(title: "Youth Committee — July 2")
+
+            VStack(spacing: 10) {
+                HStack(spacing: 14) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(hex: "#E8F8F0"))
+                            .frame(width: 50, height: 50)
+                        Image(systemName: "sportscourt.fill")
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundColor(Color(hex: "#166E3F"))
+                    }
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Pickleball Tournament")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundColor(HAA.Colors.charcoal)
+                        Text("Thu Jul 2 · 2:00 PM · Open to all youth")
+                            .font(.system(size: 12, design: .rounded))
+                            .foregroundColor(HAA.Colors.muted)
+                        Text("Arrive early — July 2 Pre-Convention")
+                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                            .foregroundColor(Color(hex: "#166E3F"))
+                    }
+                    Spacer()
+                }
+                .padding(14)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
+                .overlay(
+                    RoundedRectangle(cornerRadius: HAA.Radius.lg)
+                        .stroke(Color(hex: "#166E3F").opacity(0.3), lineWidth: 1)
+                )
+
+                HStack(spacing: 14) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(hex: "#E8F4FD"))
+                            .frame(width: 50, height: 50)
+                        Image(systemName: "figure.run")
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundColor(Color(hex: "#1565A8"))
+                    }
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Youth Social & Games")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundColor(HAA.Colors.charcoal)
+                        Text("Thu Jul 2 · 5:00 PM · Meet all 15 chapters")
+                            .font(.system(size: 12, design: .rounded))
+                            .foregroundColor(HAA.Colors.muted)
+                    }
+                    Spacer()
+                }
+                .padding(14)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
+                .overlay(
+                    RoundedRectangle(cornerRadius: HAA.Radius.lg)
+                        .stroke(HAA.Colors.border, lineWidth: 0.5)
+                )
+            }
+            .padding(.horizontal, HAA.Spacing.lg)
+        }
+    }
+
+    // MARK: - Star Attractions (chronological order, updated list)
     var starAttractions: some View {
         VStack(alignment: .leading, spacing: 0) {
             SectionHeader(title: "Star Attractions")
 
             VStack(spacing: 10) {
-                AttractionCard(
-                    icon: "theatermasks.fill",
-                    title: "Grand Yakshagana",
-                    subtitle: "July 4 · Tenku Badagu Koodata",
-                    iconColor: HAA.Colors.gold
-                )
-                AttractionCard(
-                    icon: "music.mic",
-                    title: "Anuradha Bhat — Live",
-                    subtitle: "July 3 · Musical Evening",
-                    iconColor: HAA.Colors.orange
-                )
-                AttractionCard(
-                    icon: "flame.fill",
-                    title: "Vaidika Programs & Homa",
-                    subtitle: "July 3 · Sacred morning rituals",
-                    iconColor: HAA.Colors.vedicFg
-                )
-                AttractionCard(
-                    icon: "waveform",
-                    title: "Veda Ghosha",
-                    subtitle: "July 4 · Students' Vedic recitation",
-                    iconColor: HAA.Colors.gold
-                )
+                AttractionCard(icon: "flag.fill",        title: "Grand Opening Ceremony",    subtitle: "July 3 · 2:00 PM · Parade & ceremony",    iconColor: HAA.Colors.orange)
+                AttractionCard(icon: "music.mic",        title: "Anuradha Bhat — Live",      subtitle: "July 3 · 9:00 PM · Musical evening",       iconColor: HAA.Colors.orange)
+                AttractionCard(icon: "music.note.list",  title: "Youth Symphony",            subtitle: "July 4 · 12:30 PM · Young Havyaka talent",  iconColor: HAA.Colors.gold)
+                AttractionCard(icon: "tshirt.fill",      title: "HAA Fashion Show",          subtitle: "July 4 · 2:30 PM · Traditional & fusion",   iconColor: Color(hex: "#C8530A"))
+                AttractionCard(icon: "theatermasks.fill",title: "Grand Yakshagana",          subtitle: "July 4 · 9:00 PM · Tenku Badagu Koodata",   iconColor: HAA.Colors.gold)
             }
             .padding(.horizontal, HAA.Spacing.lg)
         }
     }
 
+    // MARK: - Countdown logic
     func updateCountdown() {
         let target = conventionDate()
-        let now = Date()
-        let diff = target.timeIntervalSince(now)
-        guard diff > 0 else { return }
-        let totalMinutes = Int(diff / 60)
-        let minutes = totalMinutes % 60
-        let totalHours = totalMinutes / 60
-        let hours = totalHours % 24
-        let days = totalHours / 24
-        timeRemaining = TimeComponents(days: days, hours: hours, minutes: minutes)
+        let diff = target.timeIntervalSince(Date())
+        guard diff > 0 else {
+            timeRemaining = TimeComponents(days: 0, hours: 0, minutes: 0, seconds: 0)
+            return
+        }
+        let total   = Int(diff)
+        let seconds = total % 60
+        let minutes = (total / 60) % 60
+        let hours   = (total / 3600) % 24
+        let days    = total / 86400
+        timeRemaining = TimeComponents(days: days, hours: hours, minutes: minutes, seconds: seconds)
     }
 
     func conventionDate() -> Date {
-        var comps = DateComponents()
-        comps.year = 2026; comps.month = 7; comps.day = 3
-        comps.hour = 9; comps.minute = 0
-        comps.timeZone = TimeZone(identifier: "America/Chicago")
-        return Calendar.current.date(from: comps) ?? Date()
+        var c = DateComponents()
+        c.year = 2026; c.month = 7; c.day = 3
+        c.hour = 9; c.minute = 0; c.second = 0
+        c.timeZone = TimeZone(identifier: "America/Chicago")
+        return Calendar.current.date(from: c) ?? Date()
     }
 }
 
@@ -211,6 +261,7 @@ struct TimeComponents {
     var days: Int = 43
     var hours: Int = 12
     var minutes: Int = 0
+    var seconds: Int = 0
 }
 
 // MARK: - Quick Card
@@ -225,7 +276,6 @@ struct QuickCard: View {
             Image(systemName: icon)
                 .font(.system(size: 24, weight: .semibold))
                 .foregroundColor(color)
-
             VStack(alignment: .leading, spacing: 2) {
                 Text(label)
                     .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -242,13 +292,6 @@ struct QuickCard: View {
         .overlay(
             RoundedRectangle(cornerRadius: HAA.Radius.lg)
                 .stroke(HAA.Colors.border, lineWidth: 0.5)
-        )
-        .overlay(
-            color.opacity(0.06)
-                .clipShape(
-                    RoundedRectangle(cornerRadius: HAA.Radius.lg)
-                ),
-            alignment: .topTrailing
         )
     }
 }
@@ -270,7 +313,6 @@ struct AttractionCard: View {
                     .font(.system(size: 22, weight: .semibold))
                     .foregroundColor(iconColor)
             }
-
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -279,9 +321,7 @@ struct AttractionCard: View {
                     .font(.system(size: 12, design: .rounded))
                     .foregroundColor(HAA.Colors.mutedLight)
             }
-
             Spacer()
-
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(HAA.Colors.mutedLight)

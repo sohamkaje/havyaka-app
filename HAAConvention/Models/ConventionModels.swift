@@ -11,6 +11,8 @@ enum EventTag: String, CaseIterable {
     case meal       = "Meal"
     case concert    = "Concert"
     case meeting    = "Meeting"
+    case youth      = "Youth"
+    case sports     = "Sports"
 
     var backgroundColor: Color {
         switch self {
@@ -21,6 +23,8 @@ enum EventTag: String, CaseIterable {
         case .meal:     return Color(hex: "#F1EFE8")
         case .concert:  return HAA.Colors.culturalBg
         case .meeting:  return HAA.Colors.ceremonyBg
+        case .youth:    return Color(hex: "#E8F4FD")
+        case .sports:   return Color(hex: "#E8F8F0")
         }
     }
 
@@ -33,6 +37,8 @@ enum EventTag: String, CaseIterable {
         case .meal:     return Color(hex: "#4A4030")
         case .concert:  return HAA.Colors.culturalFg
         case .meeting:  return HAA.Colors.ceremonyFg
+        case .youth:    return Color(hex: "#1565A8")
+        case .sports:   return Color(hex: "#166E3F")
         }
     }
 
@@ -45,6 +51,8 @@ enum EventTag: String, CaseIterable {
         case .meal:     return "fork.knife"
         case .concert:  return "music.note"
         case .meeting:  return "person.2.fill"
+        case .youth:    return "figure.run"
+        case .sports:   return "sportscourt.fill"
         }
     }
 }
@@ -65,6 +73,8 @@ struct ConventionDay: Identifiable {
     let shortDay: String
     let fullDate: String
     let monthDay: String
+    /// July calendar day number (2–5) for smart default selection
+    let calendarDay: Int
     let events: [ScheduleEvent]
 }
 
@@ -101,22 +111,70 @@ struct ConventionLocation: Identifiable {
 
 // MARK: - Photo Models
 
+/// Event tags that can be applied to individual photos
+enum PhotoEventTag: String, CaseIterable, Identifiable {
+    var id: String { rawValue }
+
+    case openingCeremony  = "Opening Ceremony"
+    case concert          = "Concert"
+    case yakshagana       = "Yakshagana"
+    case vedicPrograms    = "Vedic Programs"
+    case culturalPrograms = "Cultural Programs"
+    case fashionShow      = "Fashion Show"
+    case youthSymphony    = "Youth Symphony"
+    case youthEvents      = "Youth Events"
+    case socialHour       = "Social Hour"
+    case meals            = "Meals"
+    case general          = "General"
+
+    var icon: String {
+        switch self {
+        case .openingCeremony:  return "flag.fill"
+        case .concert:          return "music.mic"
+        case .yakshagana:       return "theatermasks.fill"
+        case .vedicPrograms:    return "flame.fill"
+        case .culturalPrograms: return "theatermasks"
+        case .fashionShow:      return "tshirt.fill"
+        case .youthSymphony:    return "music.note.list"
+        case .youthEvents:      return "figure.run"
+        case .socialHour:       return "person.3.fill"
+        case .meals:            return "fork.knife"
+        case .general:          return "photo.fill"
+        }
+    }
+}
+
 struct ConventionPhoto: Identifiable {
     let id = UUID()
-    let imageName: String   // SF Symbol used as placeholder
+    let imageName: String   // SF Symbol placeholder; replace with real image asset/URL
     let caption: String
     let uploadedBy: String
-    let day: String
+    let day: String         // "July 2", "July 3", "July 4", "July 5"
+    let eventTag: PhotoEventTag
     let accentColor: Color
 }
 
+/// Album filter shown in the photo tab bar
 enum PhotoAlbum: String, CaseIterable {
     case all        = "All Photos"
+    case day0       = "July 2"
     case day1       = "July 3"
     case day2       = "July 4"
     case day3       = "July 5"
-    case ceremonies = "Ceremonies"
-    case yakshagana = "Yakshagana"
+}
+
+// MARK: - Auth / Registration Models
+
+struct AttendeeProfile: Identifiable, Codable {
+    var id: String = UUID().uuidString
+    var firstName: String = ""
+    var lastName: String = ""
+    var email: String = ""
+    var chapter: String = ""
+    var registrationID: String = ""
+    var membershipType: String = ""   // "Life", "Patron", "Regular"
+    var dietaryNote: String = ""
+    var isLoggedIn: Bool = false
 }
 
 // MARK: - Data Store
@@ -126,28 +184,31 @@ struct ConventionData {
     // MARK: Schedule
     static let days: [ConventionDay] = [
         ConventionDay(
-            shortDay: "Thu", fullDate: "Thursday, July 2", monthDay: "Jul 2",
+            shortDay: "Thu", fullDate: "Thursday, July 2", monthDay: "Jul 2", calendarDay: 2,
             events: [
-                ScheduleEvent(time: "Evening", title: "Hotel Check-in & Welcome", kannada: "ಸ್ವಾಗತ", tag: .social,
+                ScheduleEvent(time: "2:00 PM", title: "Youth Pickleball Tournament", kannada: nil, tag: .sports,
+                              details: "Kick off the convention early with the HAA Youth Committee's Pickleball Tournament! Open to all youth attendees. Brackets will be organized on-site. Prizes for top finishers.",
+                              icon: "sportscourt.fill", isHighlight: true),
+                ScheduleEvent(time: "5:00 PM", title: "Youth Social & Games", kannada: nil, tag: .youth,
+                              details: "After the tournament, youth gather for casual games, introductions, and a chance to meet youth members from all 15 chapters across North America.",
+                              icon: "figure.run"),
+                ScheduleEvent(time: "6:30 PM", title: "Hotel Check-in & Welcome", kannada: "ಸ್ವಾಗತ", tag: .social,
                               details: "Check into your hotel and get settled. Volunteers will be at the lobby to welcome attendees and hand out convention packets.",
                               icon: "key.fill"),
-                ScheduleEvent(time: "Evening", title: "Program Rehearsals", kannada: "ಕಾರ್ಯಕ್ರಮಗಳ ಪೂರ್ವಾಭ್ಯಾಸ", tag: .cultural,
+                ScheduleEvent(time: "8:00 PM", title: "Program Rehearsals", kannada: "ಕಾರ್ಯಕ್ರಮಗಳ ಪೂರ್ವಾಭ್ಯಾಸ", tag: .cultural,
                               details: "Cultural program participants gather at the main hall for final rehearsals. All chapter performance teams are requested to be present.",
                               icon: "theatermasks.fill"),
-                ScheduleEvent(time: "8:30 PM", title: "Light Dinner", kannada: "ಲಘು ಭೋಜನ", tag: .meal,
+                ScheduleEvent(time: "9:00 PM", title: "Light Dinner", kannada: "ಲಘು ಭೋಜನ", tag: .meal,
                               details: "Light vegetarian dinner for early arrivals. Menu includes South Indian snacks and refreshments.",
                               icon: "fork.knife"),
             ]
         ),
         ConventionDay(
-            shortDay: "Fri", fullDate: "Friday, July 3", monthDay: "Jul 3",
+            shortDay: "Fri", fullDate: "Friday, July 3", monthDay: "Jul 3", calendarDay: 3,
             events: [
                 ScheduleEvent(time: "7:30 AM", title: "Breakfast", kannada: "ಉಪಾಹಾರ", tag: .meal,
                               details: "Vegetarian South Indian breakfast including idli, dosa, upma, sambar and chutney served at the main cafeteria.",
                               icon: "sunrise.fill"),
-                ScheduleEvent(time: "9:00 AM", title: "Vaidika Programs, Homa & Poornahuti", kannada: "ವೈದಿಕ ಕಾರ್ಯಕ್ರಮಗಳು, ಹೋಮ, ಪೂರ್ಣಾಹುತಿ", tag: .vedic,
-                              details: "Sacred Vedic rituals including Homa (fire ceremony) and Poornahuti, led by learned scholars. Mahamangalarati will conclude the morning prayers. All attendees are welcome to participate.",
-                              icon: "flame.fill", isHighlight: true),
                 ScheduleEvent(time: "11:00 AM", title: "Social Hour", kannada: "ಪರಿಚಯ, ಕುಶಲೋಪರಿ", tag: .social,
                               details: "An open networking hour for attendees to reconnect with old friends and make new ones. Refreshments will be served.",
                               icon: "person.3.fill"),
@@ -167,29 +228,29 @@ struct ConventionData {
                               details: "Dinner is served. Traditional Havyaka feast with multiple courses.",
                               icon: "moon.stars.fill"),
                 ScheduleEvent(time: "9:00 PM", title: "Anuradha Bhat — Musical Evening", kannada: "ಸಂಗೀತ ರಸಸಂಜೆ", tag: .concert,
-                              details: "A captivating musical evening with celebrated playback singer Anuradha Bhat. Known across Kannada film industry, she will perform a mix of devotional and film songs.",
+                              details: "A captivating musical evening with celebrated playback singer Anuradha Bhat. Known across the Kannada film industry, she will perform a mix of devotional and film songs.",
                               icon: "music.mic", isHighlight: true),
             ]
         ),
         ConventionDay(
-            shortDay: "Sat", fullDate: "Saturday, July 4", monthDay: "Jul 4",
+            shortDay: "Sat", fullDate: "Saturday, July 4", monthDay: "Jul 4", calendarDay: 4,
             events: [
                 ScheduleEvent(time: "7:30 AM", title: "Breakfast", kannada: "ಉಪಾಹಾರ", tag: .meal,
                               details: "Vegetarian breakfast served at the main cafeteria.",
                               icon: "sunrise.fill"),
-                ScheduleEvent(time: "9:00 AM", title: "Veda Ghosha", kannada: "ವೇದ ಘೋಷ", tag: .vedic,
-                              details: "Veda students recite sacred Vedic hymns in the traditional oral tradition. This powerful chanting session is a signature HAA convention highlight.",
-                              icon: "waveform"),
                 ScheduleEvent(time: "10:00 AM", title: "Dance Drama", kannada: "ನೃತ್ಯ ರೂಪಕ", tag: .cultural,
-                              details: "A full-length dance drama performance by well-known professional artists. Combining classical dance forms with Kannada storytelling.",
+                              details: "A full-length dance drama performance by well-known professional artists combining classical dance forms with Kannada storytelling.",
                               icon: "figure.dance"),
                 ScheduleEvent(time: "12:30 PM", title: "Lunch & Youth Symphony", kannada: "ಭೋಜನ · ಯುವ ಸಂಗೀತ", tag: .meal,
-                              details: "Lunch served alongside a Youth Symphony performance — young Havyaka musicians from across North America showcase their talent.",
+                              details: "Lunch served alongside the Youth Symphony — young Havyaka musicians from across North America showcase their talent.",
                               icon: "music.note.list"),
-                ScheduleEvent(time: "2:30 PM", title: "Chapter Cultural Programs", kannada: "ಸಾಂಸ್ಕೃತಿಕ ಕಾರ್ಯಕ್ರಮಗಳು", tag: .cultural,
+                ScheduleEvent(time: "2:30 PM", title: "HAA Fashion Show", kannada: "ಫ್ಯಾಷನ್ ಶೋ", tag: .cultural,
+                              details: "A vibrant showcase of traditional Havyaka attire and modern Indian fashion. Participants from all chapters walk the runway in sarees, dhotis, kurtas, and fusion wear. A celebration of cultural heritage through fashion.",
+                              icon: "tshirt.fill", isHighlight: true),
+                ScheduleEvent(time: "4:30 PM", title: "Chapter Cultural Programs", kannada: "ಸಾಂಸ್ಕೃತಿಕ ಕಾರ್ಯಕ್ರಮಗಳು", tag: .cultural,
                               details: "Continued chapter cultural performances. Open Dance Floor segment included for audience participation.",
                               icon: "theatermasks.fill"),
-                ScheduleEvent(time: "5:00 PM", title: "Closing Ceremony", kannada: "ಸಮಾರೋಪ", tag: .ceremony,
+                ScheduleEvent(time: "5:30 PM", title: "Closing Ceremony", kannada: "ಸಮಾರೋಪ", tag: .ceremony,
                               details: "The 21st Biennial Convention closing ceremony. Awards, recognitions, and announcement of the next convention location.",
                               icon: "star.fill"),
                 ScheduleEvent(time: "7:30 PM", title: "Dinner", kannada: "ಭೋಜನ", tag: .meal,
@@ -201,7 +262,7 @@ struct ConventionData {
             ]
         ),
         ConventionDay(
-            shortDay: "Sun", fullDate: "Sunday, July 5", monthDay: "Jul 5",
+            shortDay: "Sun", fullDate: "Sunday, July 5", monthDay: "Jul 5", calendarDay: 5,
             events: [
                 ScheduleEvent(time: "8:00 AM", title: "Breakfast", kannada: "ಉಪಾಹಾರ", tag: .meal,
                               details: "Final morning breakfast at the convention.",
@@ -265,26 +326,26 @@ struct ConventionData {
             address: "Naperville & Schaumburg area",
             category: .food,
             coordinate: CLLocationCoordinate2D(latitude: 41.7980, longitude: -88.1620),
-            detail: "Patel Brothers and other Indian grocery stores in the greater Chicagoland area are nearby for any last-minute needs. Patel Brothers Naperville is ~20 min from the venue.",
+            detail: "Patel Brothers and other Indian grocery stores in the greater Chicagoland area are nearby. Patel Brothers Naperville is ~20 min from the venue.",
             accentColor: Color(hex: "#1D9E75"),
             icon: "cart.fill",
             distanceNote: "~15–20 min drive"
         ),
     ]
 
-    // MARK: Photos (placeholder)
+    // MARK: Photos (placeholder — replace imageName with real asset names / URLs)
     static let photos: [ConventionPhoto] = [
-        ConventionPhoto(imageName: "flame.fill", caption: "Morning Homa ceremony", uploadedBy: "Midwest Chapter", day: "July 3", accentColor: HAA.Colors.orange),
-        ConventionPhoto(imageName: "theatermasks.fill", caption: "Yakshagana performance", uploadedBy: "NorCal Chapter", day: "July 4", accentColor: HAA.Colors.gold),
-        ConventionPhoto(imageName: "music.mic", caption: "Anuradha Bhat concert", uploadedBy: "NY Chapter", day: "July 3", accentColor: HAA.Colors.orange),
-        ConventionPhoto(imageName: "person.3.fill", caption: "Social hour gathering", uploadedBy: "Dallas Chapter", day: "July 3", accentColor: Color(hex: "#1D9E75")),
-        ConventionPhoto(imageName: "book.fill", caption: "Havyasiri release", uploadedBy: "Atlanta Chapter", day: "July 3", accentColor: HAA.Colors.gold),
-        ConventionPhoto(imageName: "flag.fill", caption: "Opening parade", uploadedBy: "DC Chapter", day: "July 3", accentColor: HAA.Colors.orange),
-        ConventionPhoto(imageName: "figure.dance", caption: "Youth dance performance", uploadedBy: "SoCal Chapter", day: "July 4", accentColor: HAA.Colors.gold),
-        ConventionPhoto(imageName: "star.fill", caption: "Awards ceremony", uploadedBy: "New England Chapter", day: "July 4", accentColor: HAA.Colors.orange),
-        ConventionPhoto(imageName: "waveform", caption: "Veda Ghosha chanting", uploadedBy: "Seattle Chapter", day: "July 4", accentColor: HAA.Colors.vedicFg),
-        ConventionPhoto(imageName: "music.note.list", caption: "Youth Symphony", uploadedBy: "Chicago Chapter", day: "July 4", accentColor: HAA.Colors.gold),
-        ConventionPhoto(imageName: "fork.knife", caption: "Traditional feast", uploadedBy: "Houston Chapter", day: "July 3", accentColor: Color(hex: "#1D9E75")),
-        ConventionPhoto(imageName: "person.2.fill", caption: "General Body Meeting", uploadedBy: "HAA Board", day: "July 5", accentColor: HAA.Colors.muted),
+        ConventionPhoto(imageName: "flag.fill",        caption: "Opening parade",          uploadedBy: "DC Chapter",         day: "July 3", eventTag: .openingCeremony,  accentColor: HAA.Colors.orange),
+        ConventionPhoto(imageName: "music.mic",        caption: "Anuradha Bhat concert",   uploadedBy: "NY Chapter",         day: "July 3", eventTag: .concert,          accentColor: HAA.Colors.orange),
+        ConventionPhoto(imageName: "person.3.fill",    caption: "Social hour gathering",   uploadedBy: "Dallas Chapter",     day: "July 3", eventTag: .socialHour,       accentColor: Color(hex: "#1D9E75")),
+        ConventionPhoto(imageName: "book.fill",        caption: "Havyasiri release",       uploadedBy: "Atlanta Chapter",    day: "July 3", eventTag: .openingCeremony,  accentColor: HAA.Colors.gold),
+        ConventionPhoto(imageName: "theatermasks.fill",caption: "Yakshagana performance",  uploadedBy: "NorCal Chapter",     day: "July 4", eventTag: .yakshagana,       accentColor: HAA.Colors.gold),
+        ConventionPhoto(imageName: "figure.dance",     caption: "Youth dance performance", uploadedBy: "SoCal Chapter",      day: "July 4", eventTag: .culturalPrograms, accentColor: HAA.Colors.gold),
+        ConventionPhoto(imageName: "tshirt.fill",      caption: "Fashion show walk",       uploadedBy: "Midwest Chapter",    day: "July 4", eventTag: .fashionShow,      accentColor: HAA.Colors.orange),
+        ConventionPhoto(imageName: "music.note.list",  caption: "Youth Symphony",          uploadedBy: "Chicago Chapter",    day: "July 4", eventTag: .youthSymphony,    accentColor: HAA.Colors.gold),
+        ConventionPhoto(imageName: "star.fill",        caption: "Awards ceremony",         uploadedBy: "New England Chapter",day: "July 4", eventTag: .openingCeremony,  accentColor: HAA.Colors.orange),
+        ConventionPhoto(imageName: "fork.knife",       caption: "Traditional feast",       uploadedBy: "Houston Chapter",    day: "July 3", eventTag: .meals,            accentColor: Color(hex: "#1D9E75")),
+        ConventionPhoto(imageName: "person.2.fill",    caption: "General Body Meeting",    uploadedBy: "HAA Board",          day: "July 5", eventTag: .general,          accentColor: HAA.Colors.muted),
+        ConventionPhoto(imageName: "sportscourt.fill", caption: "Pickleball tournament",   uploadedBy: "Youth Committee",    day: "July 2", eventTag: .youthEvents,      accentColor: Color(hex: "#166E3F")),
     ]
 }

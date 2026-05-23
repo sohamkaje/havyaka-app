@@ -6,16 +6,12 @@ struct ContentView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
-                HomeView()
-                    .tag(0)
-                ScheduleView()
-                    .tag(1)
-                MapView()
-                    .tag(2)
-                PhotosView()
-                    .tag(3)
-                InfoView()
-                    .tag(4)
+                HomeView()     .tag(0)
+                ScheduleView() .tag(1)
+                MapView()      .tag(2)
+                PhotosView()   .tag(3)
+                InfoView()     .tag(4)
+                AccountView()  .tag(5)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea(edges: .bottom)
@@ -31,11 +27,12 @@ struct HAATabBar: View {
     @Binding var selectedTab: Int
 
     let tabs: [(icon: String, label: String)] = [
-        ("house.fill", "Home"),
-        ("calendar", "Schedule"),
-        ("map.fill", "Map"),
-        ("photo.fill", "Photos"),
-        ("info.circle.fill", "Info"),
+        ("house.fill",           "Home"),
+        ("calendar",             "Schedule"),
+        ("map.fill",             "Map"),
+        ("photo.fill",           "Photos"),
+        ("info.circle.fill",     "Info"),
+        ("person.crop.circle",   "Account"),
     ]
 
     var body: some View {
@@ -48,11 +45,11 @@ struct HAATabBar: View {
                 } label: {
                     VStack(spacing: 4) {
                         Image(systemName: tabs[i].icon)
-                            .font(.system(size: 20, weight: selectedTab == i ? .semibold : .regular))
+                            .font(.system(size: 19, weight: selectedTab == i ? .semibold : .regular))
                             .scaleEffect(selectedTab == i ? 1.1 : 1.0)
                         Text(tabs[i].label)
-                            .font(.system(size: 9, weight: .medium, design: .rounded))
-                            .tracking(0.5)
+                            .font(.system(size: 8, weight: .medium, design: .rounded))
+                            .tracking(0.4)
                     }
                     .foregroundColor(selectedTab == i ? HAA.Colors.gold : Color.white.opacity(0.4))
                     .frame(maxWidth: .infinity)
