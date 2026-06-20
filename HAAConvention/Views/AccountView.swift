@@ -107,8 +107,6 @@ struct AccessView: View {
             }
 
             disabledNavButton(title: "Check In", icon: "checkmark.circle", note: "Coming soon")
-
-            registerLink
         }
     }
 
@@ -255,19 +253,6 @@ struct AccessView: View {
 
     private var logInHelp: some View {
         helpCard("Use the registrant email and the 5-digit code from your email. Don't have a code yet? Go back and choose Sign Up.")
-    }
-
-    private var registerLink: some View {
-        VStack(spacing: 6) {
-            Text("Not registered yet?")
-                .font(.system(size: 13, design: .rounded))
-                .foregroundColor(HAA.Colors.muted)
-            Link("Register at haaconvention.org →",
-                 destination: URL(string: "https://haaconvention.org/registration/")!)
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundColor(HAA.Colors.orange)
-        }
-        .padding(.top, 8)
     }
 
     private func resetForm() {

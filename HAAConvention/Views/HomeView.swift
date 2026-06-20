@@ -1,6 +1,9 @@
 import SwiftUI
 
 struct HomeView: View {
+    @EnvironmentObject var auth: AuthViewModel
+    @Binding var selectedTab: Int
+    @Binding var moreSectionRequest: InfoAccountSection?
     @State private var timeRemaining = TimeComponents()
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -139,11 +142,48 @@ struct HomeView: View {
     var quickAccessGrid: some View {
         VStack(alignment: .leading, spacing: 0) {
             SectionHeader(title: "Quick Access")
+
+            if !auth.isLoggedIn {
+                Button {
+                    moreSectionRequest = .account
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        selectedTab = 4
+                    }
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Log in here")
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                        Spacer()
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 12, weight: .bold))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 14)
+                    .background(HAA.Colors.orange)
+                    .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, HAA.Spacing.lg)
+                .padding(.bottom, 12)
+            }
+
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
-                QuickCard(icon: "calendar.badge.clock", label: "Schedule",        sub: "3-day full program",  color: HAA.Colors.orange)
-                QuickCard(icon: "map.fill",             label: "Locations",       sub: "Hotels & venue",      color: HAA.Colors.gold)
-                QuickCard(icon: "photo.stack.fill",     label: "Photos",          sub: "Share memories",      color: HAA.Colors.orange)
-                QuickCard(icon: "info.circle.fill",     label: "Convention Info", sub: "Committees & FAQ",    color: HAA.Colors.gold)
+                QuickCard(icon: "calendar.badge.clock", label: "Schedule", sub: "3-day full program", color: HAA.Colors.orange) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { selectedTab = 1 }
+                }
+                QuickCard(icon: "map.fill", label: "Locations", sub: "Hotels & venue", color: HAA.Colors.gold) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { selectedTab = 2 }
+                }
+                QuickCard(icon: "photo.stack.fill", label: "Photos", sub: "Share memories", color: HAA.Colors.orange) {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { selectedTab = 3 }
+                }
+                QuickCard(icon: "info.circle.fill", label: "Convention Info", sub: "Committees & FAQ", color: HAA.Colors.gold) {
+                    moreSectionRequest = .info
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) { selectedTab = 4 }
+                }
             }
             .padding(.horizontal, HAA.Spacing.lg)
         }
@@ -270,29 +310,33 @@ struct QuickCard: View {
     let label: String
     let sub: String
     let color: Color
+    let action: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Image(systemName: icon)
-                .font(.system(size: 24, weight: .semibold))
-                .foregroundColor(color)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundColor(HAA.Colors.charcoal)
-                Text(sub)
-                    .font(.system(size: 11, design: .rounded))
-                    .foregroundColor(HAA.Colors.muted)
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundColor(color)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(label)
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(HAA.Colors.charcoal)
+                    Text(sub)
+                        .font(.system(size: 11, design: .rounded))
+                        .foregroundColor(HAA.Colors.muted)
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(HAA.Spacing.lg)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
+            .overlay(
+                RoundedRectangle(cornerRadius: HAA.Radius.lg)
+                    .stroke(HAA.Colors.border, lineWidth: 0.5)
+            )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(HAA.Spacing.lg)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
-        .overlay(
-            RoundedRectangle(cornerRadius: HAA.Radius.lg)
-                .stroke(HAA.Colors.border, lineWidth: 0.5)
-        )
+        .buttonStyle(.plain)
     }
 }
 

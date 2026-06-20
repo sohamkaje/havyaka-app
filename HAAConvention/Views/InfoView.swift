@@ -8,7 +8,7 @@ enum InfoAccountSection: String, CaseIterable {
 struct InfoAccountView: View {
     @EnvironmentObject var auth: AuthViewModel
     @EnvironmentObject var network: NetworkMonitor
-    @Binding var openAccountSection: Bool
+    @Binding var moreSectionRequest: InfoAccountSection?
     @State private var section: InfoAccountSection = .info
 
     var body: some View {
@@ -37,15 +37,15 @@ struct InfoAccountView: View {
                 }
             }
         }
-        .onChange(of: openAccountSection) { _, shouldOpen in
-            guard shouldOpen else { return }
-            section = .account
-            openAccountSection = false
+        .onChange(of: moreSectionRequest) { _, requested in
+            guard let requested else { return }
+            section = requested
+            moreSectionRequest = nil
         }
         .onAppear {
-            guard openAccountSection else { return }
-            section = .account
-            openAccountSection = false
+            guard let requested = moreSectionRequest else { return }
+            section = requested
+            moreSectionRequest = nil
         }
     }
 

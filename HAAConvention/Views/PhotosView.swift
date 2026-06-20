@@ -7,7 +7,7 @@ struct PhotosView: View {
     @EnvironmentObject var auth: AuthViewModel
     @EnvironmentObject var network: NetworkMonitor
     @Binding var selectedTab: Int
-    @Binding var openAccountSection: Bool
+    @Binding var moreSectionRequest: InfoAccountSection?
 
     @State private var selectedDayFilter: String = "All"
     @State private var selectedEventFilter: PhotoEventTag? = nil
@@ -46,7 +46,7 @@ struct PhotosView: View {
             if auth.isLoggedIn {
                 galleryContent
             } else {
-                PhotosLoginGate(selectedTab: $selectedTab, openAccountSection: $openAccountSection)
+                PhotosLoginGate(selectedTab: $selectedTab, moreSectionRequest: $moreSectionRequest)
             }
         }
         .task(id: auth.isLoggedIn) {
@@ -274,7 +274,7 @@ struct PhotosView: View {
 // MARK: - Login Gate
 struct PhotosLoginGate: View {
     @Binding var selectedTab: Int
-    @Binding var openAccountSection: Bool
+    @Binding var moreSectionRequest: InfoAccountSection?
 
     var body: some View {
         VStack(spacing: 24) {
@@ -291,7 +291,7 @@ struct PhotosLoginGate: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             Button {
-                openAccountSection = true
+                moreSectionRequest = .account
                 withAnimation { selectedTab = 4 }
             } label: {
                 Text("Go to Account")
