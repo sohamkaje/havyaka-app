@@ -75,6 +75,26 @@ struct RegistrationAPI {
         return profile.toAttendeeProfile()
     }
 
+    static func checkIn(email: String) async throws -> AttendeeProfile {
+        let raw = await postRaw(body: [
+            "action": "checkin",
+            "email": email,
+        ])
+
+        let decoded: ProfileEnvelope
+        do {
+            decoded = try decode(ProfileEnvelope.self, from: raw)
+        } catch {
+            throw error
+        }
+
+        guard raw.statusCode == 200, decoded.success, let profile = decoded.profile else {
+            throw RegistrationAPIError.server(decoded.error ?? "Check-in failed.")
+        }
+
+        return profile.toAttendeeProfile()
+    }
+
     static func postRaw(body: [String: String]) async -> APIRawResponse {
         guard let url = URL(string: baseURL) else {
             return APIRawResponse(statusCode: 0, body: "Invalid API URL.")
@@ -130,6 +150,7 @@ private struct APIProfile: Decodable {
     let email: String
     let role: String
     let registrationId: String?
+    let hasCheckedIn: Bool?
 
     func toAttendeeProfile() -> AttendeeProfile {
         AttendeeProfile(
@@ -138,6 +159,7 @@ private struct APIProfile: Decodable {
             email: email,
             role: AttendeeRole(rawValue: role) ?? .registrant,
             registrationId: registrationId ?? "",
+            hasCheckedIn: hasCheckedIn ?? false,
             isLoggedIn: true
         )
     }

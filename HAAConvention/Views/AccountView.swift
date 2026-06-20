@@ -24,6 +24,7 @@ class AuthViewModel: ObservableObject {
     @Published var isLoggedIn = false
     @Published var isLoading = false
     @Published var isSendingCode = false
+    @Published var isCheckingIn = false
     @Published var errorMessage: String?
     @Published var infoMessage: String?
     @Published var rawServerResponse: String?
@@ -107,6 +108,33 @@ class AuthViewModel: ObservableObject {
         profile = AttendeeProfile()
         isLoggedIn = false
         UserDefaults.standard.removeObject(forKey: profileKey)
+    }
+
+    func checkIn() {
+        let email = profile.email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !email.isEmpty else {
+            errorMessage = "Missing registration email."
+            return
+        }
+
+        guard !profile.hasCheckedIn else { return }
+
+        isCheckingIn = true
+        errorMessage = nil
+        infoMessage = nil
+
+        Task {
+            do {
+                var updated = try await RegistrationAPI.checkIn(email: email)
+                updated.isLoggedIn = true
+                profile = updated
+                save()
+                infoMessage = "You're checked in. Welcome to the convention!"
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isCheckingIn = false
+        }
     }
 }
 
@@ -546,6 +574,17 @@ struct ProfileView: View {
 
                 VStack(spacing: 10) {
                     accountCard
+                    if auth.profile.hasCheckedIn {
+                        checkedInCard
+                    } else {
+                        checkInButton
+                    }
+                    if let info = auth.infoMessage {
+                        banner(text: info, icon: "checkmark.circle.fill", color: Color(hex: "#166E3F"), bg: Color(hex: "#E8F8F0"))
+                    }
+                    if let err = auth.errorMessage {
+                        banner(text: err, icon: "exclamationmark.triangle.fill", color: .red, bg: Color.red.opacity(0.07))
+                    }
                     helpCard
                 }
                 .padding(.horizontal, HAA.Spacing.lg)
@@ -621,6 +660,54 @@ struct ProfileView: View {
         .haaCard()
     }
 
+    private var checkedInCard: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 22))
+                .foregroundColor(Color(hex: "#1D9E75"))
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Checked In")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundColor(HAA.Colors.charcoal)
+                Text("Your convention check-in is complete.")
+                    .font(.system(size: 12, design: .rounded))
+                    .foregroundColor(HAA.Colors.muted)
+            }
+            Spacer()
+        }
+        .padding(16)
+        .background(Color(hex: "#E8F8F0"))
+        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: HAA.Radius.lg)
+                .stroke(Color(hex: "#1D9E75").opacity(0.25), lineWidth: 0.5)
+        )
+    }
+
+    private var checkInButton: some View {
+        Button {
+            auth.checkIn()
+        } label: {
+            HStack(spacing: 8) {
+                if auth.isCheckingIn {
+                    ProgressView().tint(.white).scaleEffect(0.85)
+                } else {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 18))
+                }
+                Text(auth.isCheckingIn ? "Checking in…" : "Check In")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 15)
+            .background(auth.isCheckingIn ? HAA.Colors.muted : HAA.Colors.orange)
+            .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+        }
+        .buttonStyle(.plain)
+        .disabled(auth.isCheckingIn)
+    }
+
     private var helpCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             cardHeader(icon: "questionmark.circle.fill", title: "Need Help?", color: Color(hex: "#185FA5"))
@@ -657,5 +744,15 @@ struct ProfileView: View {
                     .foregroundColor(HAA.Colors.charcoal)
             }
         }
+    }
+
+    private func banner(text: String, icon: String, color: Color, bg: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon).foregroundColor(color).font(.system(size: 14))
+            Text(text).font(.system(size: 13, design: .rounded)).foregroundColor(color)
+        }
+        .padding(12)
+        .background(bg)
+        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
     }
 }

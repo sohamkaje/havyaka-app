@@ -188,10 +188,11 @@ struct AttendeeProfile: Identifiable, Codable {
     var email: String = ""
     var role: AttendeeRole = .registrant
     var registrationId: String = ""
+    var hasCheckedIn: Bool = false
     var isLoggedIn: Bool = false
 
     enum CodingKeys: String, CodingKey {
-        case id, firstName, lastName, email, role, registrationId, isLoggedIn
+        case id, firstName, lastName, email, role, registrationId, hasCheckedIn, isLoggedIn
     }
 }
 
