@@ -234,11 +234,69 @@ struct AttendeeProfile: Identifiable, Codable {
     var email: String = ""
     var role: AttendeeRole = .registrant
     var registrationId: String = ""
+    var registrationUuid: String = ""
     var hasCheckedIn: Bool = false
     var isLoggedIn: Bool = false
 
     enum CodingKeys: String, CodingKey {
         case id, firstName, lastName, email, role, registrationId, hasCheckedIn, isLoggedIn
+        case registrationUuid = "uuid"
+    }
+
+    init(
+        id: String = UUID().uuidString,
+        firstName: String = "",
+        lastName: String = "",
+        email: String = "",
+        role: AttendeeRole = .registrant,
+        registrationId: String = "",
+        registrationUuid: String = "",
+        hasCheckedIn: Bool = false,
+        isLoggedIn: Bool = false
+    ) {
+        self.id = id
+        self.firstName = firstName
+        self.lastName = lastName
+        self.email = email
+        self.role = role
+        self.registrationId = registrationId
+        self.registrationUuid = registrationUuid
+        self.hasCheckedIn = hasCheckedIn
+        self.isLoggedIn = isLoggedIn
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        firstName = try container.decodeIfPresent(String.self, forKey: .firstName) ?? ""
+        lastName = try container.decodeIfPresent(String.self, forKey: .lastName) ?? ""
+        email = try container.decodeIfPresent(String.self, forKey: .email) ?? ""
+        role = try container.decodeIfPresent(AttendeeRole.self, forKey: .role) ?? .registrant
+        registrationId = try container.decodeIfPresent(String.self, forKey: .registrationId) ?? ""
+        registrationUuid = try container.decodeIfPresent(String.self, forKey: .registrationUuid) ?? ""
+        hasCheckedIn = try container.decodeIfPresent(Bool.self, forKey: .hasCheckedIn) ?? false
+        isLoggedIn = try container.decodeIfPresent(Bool.self, forKey: .isLoggedIn) ?? false
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(firstName, forKey: .firstName)
+        try container.encode(lastName, forKey: .lastName)
+        try container.encode(email, forKey: .email)
+        try container.encode(role, forKey: .role)
+        try container.encode(registrationId, forKey: .registrationId)
+        try container.encode(registrationUuid, forKey: .registrationUuid)
+        try container.encode(hasCheckedIn, forKey: .hasCheckedIn)
+        try container.encode(isLoggedIn, forKey: .isLoggedIn)
+    }
+
+    var checkInURL: URL? {
+        let uuid = registrationUuid.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !uuid.isEmpty else { return nil }
+        var components = URLComponents(string: "https://haaconvention.org/registrations-report/")
+        components?.queryItems = [URLQueryItem(name: "t", value: uuid)]
+        return components?.url
     }
 }
 

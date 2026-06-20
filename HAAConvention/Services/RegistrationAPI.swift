@@ -63,9 +63,9 @@ struct RegistrationAPI {
         return profile.toAttendeeProfile()
     }
 
-    static func checkIn(email: String) async throws -> AttendeeProfile {
+    static func fetchStatus(email: String) async throws -> AttendeeProfile {
         let raw = await postRaw(body: [
-            "action": "checkin",
+            "action": "status",
             "email": email,
         ])
 
@@ -77,7 +77,7 @@ struct RegistrationAPI {
         }
 
         guard raw.statusCode == 200, decoded.success, let profile = decoded.profile else {
-            throw RegistrationAPIError.server(decoded.error ?? "Check-in failed.")
+            throw RegistrationAPIError.server(decoded.error ?? "Could not refresh registration status.")
         }
 
         return profile.toAttendeeProfile()
@@ -138,6 +138,7 @@ private struct APIProfile: Decodable {
     let email: String
     let role: String
     let registrationId: String?
+    let uuid: String?
     let hasCheckedIn: Bool?
 
     func toAttendeeProfile() -> AttendeeProfile {
@@ -147,6 +148,7 @@ private struct APIProfile: Decodable {
             email: email,
             role: AttendeeRole(rawValue: role) ?? .registrant,
             registrationId: registrationId ?? "",
+            registrationUuid: uuid ?? "",
             hasCheckedIn: hasCheckedIn ?? false,
             isLoggedIn: true
         )

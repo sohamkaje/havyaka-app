@@ -6,7 +6,6 @@ class AuthViewModel: ObservableObject {
     @Published var isLoggedIn = false
     @Published var isLoading = false
     @Published var isSendingCode = false
-    @Published var isCheckingIn = false
     @Published var errorMessage: String?
     @Published var infoMessage: String?
 
@@ -91,30 +90,32 @@ class AuthViewModel: ObservableObject {
         UserDefaults.standard.removeObject(forKey: profileKey)
     }
 
-    func checkIn() {
+    /// Polls the server for updated registration status. Returns true when the user was just checked in.
+    @discardableResult
+    func refreshRegistrationStatus() async -> Bool {
         let email = profile.email.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !email.isEmpty else {
-            errorMessage = "Missing registration email."
-            return
-        }
+        guard isLoggedIn, !email.isEmpty else { return false }
 
-        guard !profile.hasCheckedIn else { return }
+        do {
+            let updated = try await RegistrationAPI.fetchStatus(email: email)
+            let wasCheckedIn = profile.hasCheckedIn
 
-        isCheckingIn = true
-        errorMessage = nil
-        infoMessage = nil
-
-        Task {
-            do {
-                var updated = try await RegistrationAPI.checkIn(email: email)
-                updated.isLoggedIn = true
-                profile = updated
-                save()
-                infoMessage = "You're checked in. Welcome to the convention!"
-            } catch {
-                errorMessage = error.localizedDescription
+            profile.firstName = updated.firstName
+            profile.lastName = updated.lastName
+            profile.registrationId = updated.registrationId
+            if !updated.registrationUuid.isEmpty {
+                profile.registrationUuid = updated.registrationUuid
             }
-            isCheckingIn = false
+            profile.hasCheckedIn = updated.hasCheckedIn
+            save()
+
+            return !wasCheckedIn && updated.hasCheckedIn
+        } catch {
+            return false
         }
+    }
+
+    func markCheckedInFromVolunteerScan() {
+        infoMessage = "You're checked in. Welcome to the convention!"
     }
 }

@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreImage
 
 // MARK: - Access View
 struct AccessView: View {
@@ -392,6 +393,7 @@ struct ProfileView: View {
     @ObservedObject var auth: AuthViewModel
     @EnvironmentObject var network: NetworkMonitor
     @State private var showLogoutConfirm = false
+    @State private var showCheckInSheet = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -442,6 +444,33 @@ struct ProfileView: View {
             }
         }
         .background(HAA.Colors.cream.ignoresSafeArea())
+        .sheet(isPresented: $showCheckInSheet) {
+            CheckInQRSheet(auth: auth)
+        }
+        .onChange(of: auth.profile.hasCheckedIn) { _, checkedIn in
+            if checkedIn {
+                showCheckInSheet = false
+            }
+        }
+        .task(id: auth.profile.hasCheckedIn) {
+            guard !auth.profile.hasCheckedIn else { return }
+            await auth.refreshRegistrationStatus()
+            guard !auth.profile.hasCheckedIn else { return }
+
+            while !Task.isCancelled && !auth.profile.hasCheckedIn {
+                guard network.isConnected else {
+                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                    continue
+                }
+
+                if await auth.refreshRegistrationStatus() {
+                    auth.markCheckedInFromVolunteerScan()
+                    break
+                }
+
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+            }
+        }
     }
 
     private var profileHeader: some View {
@@ -512,26 +541,21 @@ struct ProfileView: View {
 
     private var checkInButton: some View {
         Button {
-            auth.checkIn()
+            showCheckInSheet = true
         } label: {
             HStack(spacing: 8) {
-                if auth.isCheckingIn {
-                    ProgressView().tint(.white).scaleEffect(0.85)
-                } else {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 18))
-                }
-                Text(auth.isCheckingIn ? "Checking in…" : "Check In")
+                Image(systemName: "qrcode")
+                    .font(.system(size: 18))
+                Text("Check In")
                     .font(.system(size: 15, weight: .bold, design: .rounded))
             }
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 15)
-            .background(auth.isCheckingIn ? HAA.Colors.muted : HAA.Colors.orange)
+            .background(HAA.Colors.orange)
             .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
         }
         .buttonStyle(.plain)
-        .disabled(auth.isCheckingIn || !network.isConnected)
     }
 
     private var helpCard: some View {
@@ -580,5 +604,199 @@ struct ProfileView: View {
         .padding(12)
         .background(bg)
         .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+    }
+}
+
+// MARK: - Check-In QR Sheet
+struct CheckInQRSheet: View {
+    @ObservedObject var auth: AuthViewModel
+    @EnvironmentObject var network: NetworkMonitor
+    @Environment(\.dismiss) private var dismiss
+
+    private let steps: [(number: String, title: String, detail: String)] = [
+        ("1", "Head to the Check-In Desk", "When you arrive at the venue, walk up to the Main Registration & Check-In Desk in the event hall."),
+        ("2", "Show your QR code", "Present the QR code below to one of our volunteers — on your phone screen or a printout. A quick scan instantly pulls up your registration."),
+        ("3", "Collect your badges & souvenir", "Once scanned, you'll receive your official name badges and your custom convention souvenir packet. That's it — you're in!"),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("How Check-In Works — 3 Easy Steps")
+                        .font(HAA.Font.serif(20, weight: .bold))
+                        .foregroundColor(HAA.Colors.charcoal)
+
+                    VStack(alignment: .leading, spacing: 16) {
+                        ForEach(steps, id: \.number) { step in
+                            HStack(alignment: .top, spacing: 12) {
+                                Text(step.number)
+                                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                                    .foregroundColor(.white)
+                                    .frame(width: 26, height: 26)
+                                    .background(HAA.Colors.orange)
+                                    .clipShape(Circle())
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(step.title)
+                                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                                        .foregroundColor(HAA.Colors.charcoal)
+                                    Text(step.detail)
+                                        .font(.system(size: 13, design: .rounded))
+                                        .foregroundColor(HAA.Colors.muted)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                    }
+
+                    qrSection
+                }
+                .padding(HAA.Spacing.lg)
+                .padding(.bottom, 24)
+            }
+            .background(HAA.Colors.cream.ignoresSafeArea())
+            .navigationTitle("Convention Check-In")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                }
+            }
+            .task {
+                guard !auth.profile.hasCheckedIn else {
+                    dismiss()
+                    return
+                }
+
+                while !Task.isCancelled && !auth.profile.hasCheckedIn {
+                    guard network.isConnected else {
+                        try? await Task.sleep(nanoseconds: 3_000_000_000)
+                        continue
+                    }
+
+                    if await auth.refreshRegistrationStatus() {
+                        auth.markCheckedInFromVolunteerScan()
+                        dismiss()
+                        break
+                    }
+
+                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var qrSection: some View {
+        VStack(spacing: 12) {
+            if auth.profile.hasCheckedIn {
+                VStack(spacing: 12) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 44))
+                        .foregroundColor(Color(hex: "#1D9E75"))
+                    Text("You're checked in!")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundColor(HAA.Colors.charcoal)
+                    Text("Your registration was confirmed by our volunteers.")
+                        .font(.system(size: 13, design: .rounded))
+                        .foregroundColor(HAA.Colors.muted)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(24)
+                .background(Color(hex: "#E8F8F0"))
+                .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
+            } else if let url = auth.profile.checkInURL {
+                QRCodeImageView(text: url.absoluteString)
+                    .frame(width: 220, height: 220)
+                    .padding(16)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: HAA.Radius.lg)
+                            .stroke(HAA.Colors.border, lineWidth: 0.5)
+                    )
+                    .frame(maxWidth: .infinity)
+
+                Text("\(auth.profile.firstName) \(auth.profile.lastName)")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundColor(HAA.Colors.charcoal)
+
+                Text(auth.profile.email)
+                    .font(.system(size: 12, design: .rounded))
+                    .foregroundColor(HAA.Colors.muted)
+
+                if network.isConnected {
+                    HStack(spacing: 8) {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Waiting for volunteer to scan your code…")
+                            .font(.system(size: 12, design: .rounded))
+                            .foregroundColor(HAA.Colors.muted)
+                    }
+                    .padding(.top, 4)
+                }
+            } else {
+                VStack(spacing: 10) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 28))
+                        .foregroundColor(HAA.Colors.orange)
+                    Text("Your check-in QR code isn't available yet.")
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundColor(HAA.Colors.charcoal)
+                        .multilineTextAlignment(.center)
+                    Text("Sign out and log in again to refresh your registration details.")
+                        .font(.system(size: 13, design: .rounded))
+                        .foregroundColor(HAA.Colors.muted)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(24)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
+            }
+        }
+        .padding(.top, 4)
+    }
+}
+
+// MARK: - QR Code
+struct QRCodeImageView: View {
+    let text: String
+
+    var body: some View {
+        if let image = generateQRCode(from: text) {
+            Image(uiImage: image)
+                .interpolation(.none)
+                .resizable()
+                .scaledToFit()
+        } else {
+            RoundedRectangle(cornerRadius: HAA.Radius.md)
+                .fill(HAA.Colors.orangeLight)
+                .overlay(
+                    Image(systemName: "qrcode")
+                        .font(.system(size: 48))
+                        .foregroundColor(HAA.Colors.muted)
+                )
+        }
+    }
+
+    private func generateQRCode(from string: String) -> UIImage? {
+        guard let data = string.data(using: .utf8),
+              let filter = CIFilter(name: "CIQRCodeGenerator") else { return nil }
+
+        filter.setValue(data, forKey: "inputMessage")
+        filter.setValue("M", forKey: "inputCorrectionLevel")
+
+        guard let output = filter.outputImage else { return nil }
+
+        let scale = 12.0
+        let transformed = output.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+        let context = CIContext()
+
+        guard let cgImage = context.createCGImage(transformed, from: transformed.extent) else { return nil }
+        return UIImage(cgImage: cgImage)
     }
 }
