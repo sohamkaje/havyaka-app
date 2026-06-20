@@ -106,8 +106,6 @@ struct AccessView: View {
                 resetForm()
                 screen = .logIn
             }
-
-            disabledNavButton(title: "Check In", icon: "checkmark.circle", note: "Coming soon")
         }
     }
 
@@ -287,28 +285,6 @@ struct AccessView: View {
             )
         }
         .buttonStyle(.plain)
-    }
-
-    private func disabledNavButton(title: String, icon: String, note: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.system(size: 18))
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                Text(note)
-                    .font(.system(size: 11, design: .rounded))
-            }
-            Spacer()
-        }
-        .foregroundColor(HAA.Colors.muted)
-        .padding(16)
-        .background(Color.white.opacity(0.6))
-        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-        .overlay(
-            RoundedRectangle(cornerRadius: HAA.Radius.md)
-                .stroke(HAA.Colors.border, lineWidth: 0.5)
-        )
     }
 
     private func submitLabel(loading: Bool, loadingText: String, text: String, icon: String) -> some View {

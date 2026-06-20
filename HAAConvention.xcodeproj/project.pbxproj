@@ -7,18 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		892FC4A52FC07C3A00F2A9B5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 892FC4A42FC07C3700F2A9B5 /* Assets.xcassets */; };
 		893618FA2FC07EBC0065D856 /* ConventionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618F92FC07EBC0065D856 /* ConventionModels.swift */; };
 		893618FC2FC07ECB0065D856 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FB2FC07ECB0065D856 /* AccountView.swift */; };
-		893619082FC080100065D856 /* RegistrationAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893619072FC080100065D856 /* RegistrationAPI.swift */; };
-		8936190A2FC081200065D856 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893619092FC081200065D856 /* AuthViewModel.swift */; };
-		8936190E2FC081400065D856 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8936190D2FC081400065D856 /* NetworkMonitor.swift */; };
-		8936190C2FC081300065D856 /* PhotosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8936190B2FC081300065D856 /* PhotosAPI.swift */; };
 		893618FE2FC07ED20065D856 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FD2FC07ED20065D856 /* ContentView.swift */; };
 		893619002FC07EF70065D856 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FF2FC07EF70065D856 /* HomeView.swift */; };
 		893619022FC07F4F0065D856 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893619012FC07F4F0065D856 /* MapView.swift */; };
 		893619042FC07F5D0065D856 /* PhotosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893619032FC07F5D0065D856 /* PhotosView.swift */; };
 		893619062FC07F720065D856 /* SharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893619052FC07F720065D856 /* SharedComponents.swift */; };
+		893619082FC080100065D856 /* RegistrationAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893619072FC080100065D856 /* RegistrationAPI.swift */; };
+		8936190A2FC081200065D856 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893619092FC081200065D856 /* AuthViewModel.swift */; };
+		8936190C2FC081300065D856 /* PhotosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8936190B2FC081300065D856 /* PhotosAPI.swift */; };
+		8936190E2FC081400065D856 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8936190D2FC081400065D856 /* NetworkMonitor.swift */; };
+		89F9AF812FE725B7007A3F36 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89F9AF802FE725B7007A3F36 /* Assets.xcassets */; };
 		A101 /* HAAConventionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B101 /* HAAConventionApp.swift */; };
 		A102 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B102 /* DesignSystem.swift */; };
 		A107 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B107 /* ScheduleView.swift */; };
@@ -26,18 +26,18 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		892FC4A42FC07C3700F2A9B5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = text; path = Assets.xcassets; sourceTree = "<group>"; };
 		893618F92FC07EBC0065D856 /* ConventionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConventionModels.swift; sourceTree = "<group>"; };
 		893618FB2FC07ECB0065D856 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
-		893619072FC080100065D856 /* RegistrationAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationAPI.swift; sourceTree = "<group>"; };
-		893619092FC081200065D856 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
-		8936190D2FC081400065D856 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
-		8936190B2FC081300065D856 /* PhotosAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAPI.swift; sourceTree = "<group>"; };
 		893618FD2FC07ED20065D856 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		893618FF2FC07EF70065D856 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		893619012FC07F4F0065D856 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		893619032FC07F5D0065D856 /* PhotosView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosView.swift; sourceTree = "<group>"; };
 		893619052FC07F720065D856 /* SharedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedComponents.swift; sourceTree = "<group>"; };
+		893619072FC080100065D856 /* RegistrationAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationAPI.swift; sourceTree = "<group>"; };
+		893619092FC081200065D856 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		8936190B2FC081300065D856 /* PhotosAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAPI.swift; sourceTree = "<group>"; };
+		8936190D2FC081400065D856 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
+		89F9AF802FE725B7007A3F36 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B101 /* HAAConventionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HAAConventionApp.swift; sourceTree = "<group>"; };
 		B102 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		B107 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
@@ -59,12 +59,12 @@
 		GRP_APP /* HAAConvention */ = {
 			isa = PBXGroup;
 			children = (
-				892FC4A42FC07C3700F2A9B5 /* Assets.xcassets */,
 				B101 /* HAAConventionApp.swift */,
 				B102 /* DesignSystem.swift */,
 				GRP_MODELS /* Models */,
 				GRP_SERVICES /* Services */,
 				GRP_VIEWS /* Views */,
+				89F9AF802FE725B7007A3F36 /* Assets.xcassets */,
 			);
 			path = HAAConvention;
 			sourceTree = "<group>";
@@ -75,17 +75,6 @@
 				893618F92FC07EBC0065D856 /* ConventionModels.swift */,
 			);
 			path = Models;
-			sourceTree = "<group>";
-		};
-		GRP_SERVICES /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				893619092FC081200065D856 /* AuthViewModel.swift */,
-				8936190D2FC081400065D856 /* NetworkMonitor.swift */,
-				893619072FC080100065D856 /* RegistrationAPI.swift */,
-				8936190B2FC081300065D856 /* PhotosAPI.swift */,
-			);
-			path = Services;
 			sourceTree = "<group>";
 		};
 		GRP_PROD /* Products */ = {
@@ -102,6 +91,17 @@
 				GRP_APP /* HAAConvention */,
 				GRP_PROD /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		GRP_SERVICES /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				893619092FC081200065D856 /* AuthViewModel.swift */,
+				8936190D2FC081400065D856 /* NetworkMonitor.swift */,
+				893619072FC080100065D856 /* RegistrationAPI.swift */,
+				8936190B2FC081300065D856 /* PhotosAPI.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		GRP_VIEWS /* Views */ = {
@@ -177,7 +177,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				892FC4A52FC07C3A00F2A9B5 /* Assets.xcassets in Resources */,
+				89F9AF812FE725B7007A3F36 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
