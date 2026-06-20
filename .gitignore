@@ -1,0 +1,15 @@
+# Secrets
+.env
+api/.env
+
+# PHP API (deploy to Bluehost manually — do not commit)
+api/*.php
+
+# macOS
+.DS_Store
+
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+**/xcuserdata/

@@ -7,34 +7,40 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		892FC4A52FC07C3A00F2A9B5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 892FC4A42FC07C3700F2A9B5 /* Assets.xcassets */; };
+		893618FA2FC07EBC0065D856 /* ConventionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618F92FC07EBC0065D856 /* ConventionModels.swift */; };
+		893618FC2FC07ECB0065D856 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FB2FC07ECB0065D856 /* AccountView.swift */; };
+		893619082FC080100065D856 /* RegistrationAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893619072FC080100065D856 /* RegistrationAPI.swift */; };
+		893618FE2FC07ED20065D856 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FD2FC07ED20065D856 /* ContentView.swift */; };
+		893619002FC07EF70065D856 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FF2FC07EF70065D856 /* HomeView.swift */; };
+		893619022FC07F4F0065D856 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893619012FC07F4F0065D856 /* MapView.swift */; };
+		893619042FC07F5D0065D856 /* PhotosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893619032FC07F5D0065D856 /* PhotosView.swift */; };
+		893619062FC07F720065D856 /* SharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893619052FC07F720065D856 /* SharedComponents.swift */; };
 		A101 /* HAAConventionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B101 /* HAAConventionApp.swift */; };
 		A102 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B102 /* DesignSystem.swift */; };
-		A103 /* ConventionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = B103 /* ConventionModels.swift */; };
-		A104 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B104 /* ContentView.swift */; };
-		A105 /* SharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = B105 /* SharedComponents.swift */; };
-		A106 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B106 /* HomeView.swift */; };
 		A107 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B107 /* ScheduleView.swift */; };
-		A108 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B108 /* MapView.swift */; };
-		A109 /* PhotosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B109 /* PhotosView.swift */; };
 		A110 /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B110 /* InfoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		892FC4A42FC07C3700F2A9B5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = text; path = Assets.xcassets; sourceTree = "<group>"; };
+		893618F92FC07EBC0065D856 /* ConventionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConventionModels.swift; sourceTree = "<group>"; };
+		893618FB2FC07ECB0065D856 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
+		893619072FC080100065D856 /* RegistrationAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationAPI.swift; sourceTree = "<group>"; };
+		893618FD2FC07ED20065D856 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		893618FF2FC07EF70065D856 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		893619012FC07F4F0065D856 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		893619032FC07F5D0065D856 /* PhotosView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosView.swift; sourceTree = "<group>"; };
+		893619052FC07F720065D856 /* SharedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedComponents.swift; sourceTree = "<group>"; };
 		B101 /* HAAConventionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HAAConventionApp.swift; sourceTree = "<group>"; };
 		B102 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
-		B103 /* ConventionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConventionModels.swift; sourceTree = "<group>"; };
-		B104 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		B105 /* SharedComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedComponents.swift; sourceTree = "<group>"; };
-		B106 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		B107 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
-		B108 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
-		B109 /* PhotosView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosView.swift; sourceTree = "<group>"; };
 		B110 /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		PROD01 /* HAAConvention.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HAAConvention.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		FW01 = {
+		FW01 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -44,53 +50,64 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		GRP_ROOT = {
+		GRP_APP /* HAAConvention */ = {
 			isa = PBXGroup;
 			children = (
-				GRP_APP,
-				GRP_PROD,
-			);
-			sourceTree = "<group>";
-		};
-		GRP_APP = {
-			isa = PBXGroup;
-			children = (
-				B101,
-				B102,
-				GRP_MODELS,
-				GRP_VIEWS,
+				892FC4A42FC07C3700F2A9B5 /* Assets.xcassets */,
+				B101 /* HAAConventionApp.swift */,
+				B102 /* DesignSystem.swift */,
+				GRP_MODELS /* Models */,
+				GRP_SERVICES /* Services */,
+				GRP_VIEWS /* Views */,
 			);
 			path = HAAConvention;
 			sourceTree = "<group>";
 		};
-		GRP_MODELS = {
+		GRP_MODELS /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				B103,
+				893618F92FC07EBC0065D856 /* ConventionModels.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
 		};
-		GRP_VIEWS = {
+		GRP_SERVICES /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				B104,
-				B105,
-				B106,
-				B107,
-				B108,
-				B109,
-				B110,
+				893619072FC080100065D856 /* RegistrationAPI.swift */,
 			);
-			path = Views;
+			path = Services;
 			sourceTree = "<group>";
 		};
-		GRP_PROD = {
+		GRP_PROD /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				PROD01,
+				PROD01 /* HAAConvention.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		GRP_ROOT = {
+			isa = PBXGroup;
+			children = (
+				GRP_APP /* HAAConvention */,
+				GRP_PROD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		GRP_VIEWS /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B107 /* ScheduleView.swift */,
+				893618FD2FC07ED20065D856 /* ContentView.swift */,
+				893619012FC07F4F0065D856 /* MapView.swift */,
+				893618FF2FC07EF70065D856 /* HomeView.swift */,
+				893618FB2FC07ECB0065D856 /* AccountView.swift */,
+				B110 /* InfoView.swift */,
+				893619032FC07F5D0065D856 /* PhotosView.swift */,
+				893619052FC07F720065D856 /* SharedComponents.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -98,11 +115,11 @@
 /* Begin PBXNativeTarget section */
 		TGT01 /* HAAConvention */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = BLDCFG_TGT;
+			buildConfigurationList = BLDCFG_TGT /* Build configuration list for PBXNativeTarget "HAAConvention" */;
 			buildPhases = (
-				SRC01,
-				FW01,
-				RES01,
+				SRC01 /* Sources */,
+				FW01 /* Frameworks */,
+				RES01 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -110,7 +127,7 @@
 			);
 			name = HAAConvention;
 			productName = HAAConvention;
-			productReference = PROD01;
+			productReference = PROD01 /* HAAConvention.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -128,7 +145,7 @@
 					};
 				};
 			};
-			buildConfigurationList = BLDCFG_PROJ;
+			buildConfigurationList = BLDCFG_PROJ /* Build configuration list for PBXProject "HAAConvention" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -137,47 +154,50 @@
 				Base,
 			);
 			mainGroup = GRP_ROOT;
-			productRefGroup = GRP_PROD;
+			productRefGroup = GRP_PROD /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				TGT01,
+				TGT01 /* HAAConvention */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		RES01 = {
+		RES01 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				892FC4A52FC07C3A00F2A9B5 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		SRC01 = {
+		SRC01 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A101,
-				A102,
-				A103,
-				A104,
-				A105,
-				A106,
-				A107,
-				A108,
-				A109,
-				A110,
+				A101 /* HAAConventionApp.swift in Sources */,
+				A102 /* DesignSystem.swift in Sources */,
+				893619022FC07F4F0065D856 /* MapView.swift in Sources */,
+				893619042FC07F5D0065D856 /* PhotosView.swift in Sources */,
+				893618FC2FC07ECB0065D856 /* AccountView.swift in Sources */,
+				893619062FC07F720065D856 /* SharedComponents.swift in Sources */,
+				893618FE2FC07ED20065D856 /* ContentView.swift in Sources */,
+				A107 /* ScheduleView.swift in Sources */,
+				893618FA2FC07EBC0065D856 /* ConventionModels.swift in Sources */,
+				893619082FC080100065D856 /* RegistrationAPI.swift in Sources */,
+				A110 /* InfoView.swift in Sources */,
+				893619002FC07EF70065D856 /* HomeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		BLDCFG_DEBUG_PROJ = {
+		BLDCFG_DEBUG_PROJ /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -238,7 +258,37 @@
 			};
 			name = Debug;
 		};
-		BLDCFG_RELEASE_PROJ = {
+		BLDCFG_DEBUG_TGT /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = L42W7RT9LF;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Used to show your position on the convention map.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Used to save convention photos to your library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Used to upload your photos to the convention gallery.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.havyak.HAAConvention;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		BLDCFG_RELEASE_PROJ /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -292,44 +342,14 @@
 			};
 			name = Release;
 		};
-		BLDCFG_DEBUG_TGT = {
+		BLDCFG_RELEASE_TGT /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Used to show your position on the convention map.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Used to save convention photos to your library.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Used to upload your photos to the convention gallery.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = org.havyak.HAAConvention;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Debug;
-		};
-		BLDCFG_RELEASE_TGT = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = L42W7RT9LF;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Used to show your position on the convention map.";
@@ -355,26 +375,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BLDCFG_PROJ = {
+		BLDCFG_PROJ /* Build configuration list for PBXProject "HAAConvention" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				BLDCFG_DEBUG_PROJ,
-				BLDCFG_RELEASE_PROJ,
+				BLDCFG_DEBUG_PROJ /* Debug */,
+				BLDCFG_RELEASE_PROJ /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		BLDCFG_TGT = {
+		BLDCFG_TGT /* Build configuration list for PBXNativeTarget "HAAConvention" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				BLDCFG_DEBUG_TGT,
-				BLDCFG_RELEASE_TGT,
+				BLDCFG_DEBUG_TGT /* Debug */,
+				BLDCFG_RELEASE_TGT /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = PROJ01 /* Project object */;
 }

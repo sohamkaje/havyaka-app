@@ -85,6 +85,7 @@ enum LocationCategory: String, CaseIterable {
     case venue    = "Venue"
     case hotels   = "Hotels"
     case food     = "Food & Grocery"
+    case sports   = "Sports & Activities"
 
     var systemIcon: String {
         switch self {
@@ -92,6 +93,7 @@ enum LocationCategory: String, CaseIterable {
         case .venue:  return "building.columns.fill"
         case .hotels: return "bed.double.fill"
         case .food:   return "leaf.fill"
+        case .sports: return "sportscourt.fill"
         }
     }
 }
@@ -165,16 +167,32 @@ enum PhotoAlbum: String, CaseIterable {
 
 // MARK: - Auth / Registration Models
 
+enum AttendeeRole: String, Codable {
+    case registrant
+    case adult
+    case kid
+
+    var label: String {
+        switch self {
+        case .registrant: return "Primary Registrant"
+        case .adult:      return "Adult Attendee"
+        case .kid:        return "Youth Attendee"
+        }
+    }
+}
+
 struct AttendeeProfile: Identifiable, Codable {
     var id: String = UUID().uuidString
     var firstName: String = ""
     var lastName: String = ""
     var email: String = ""
-    var chapter: String = ""
-    var registrationID: String = ""
-    var membershipType: String = ""   // "Life", "Patron", "Regular"
-    var dietaryNote: String = ""
+    var role: AttendeeRole = .registrant
+    var registrationId: String = ""
     var isLoggedIn: Bool = false
+
+    enum CodingKeys: String, CodingKey {
+        case id, firstName, lastName, email, role, registrationId, isLoggedIn
+    }
 }
 
 // MARK: - Data Store
@@ -187,11 +205,8 @@ struct ConventionData {
             shortDay: "Thu", fullDate: "Thursday, July 2", monthDay: "Jul 2", calendarDay: 2,
             events: [
                 ScheduleEvent(time: "2:00 PM", title: "Youth Pickleball Tournament", kannada: nil, tag: .sports,
-                              details: "Kick off the convention early with the HAA Youth Committee's Pickleball Tournament! Open to all youth attendees. Brackets will be organized on-site. Prizes for top finishers.",
+                              details: "Kick off the convention early with the HAA Youth Committee's Pickleball Tournament at Play N Thrive Club (808 IL-59 N, Naperville). Open to all youth attendees. Brackets will be organized on-site. Prizes for top finishers.",
                               icon: "sportscourt.fill", isHighlight: true),
-                ScheduleEvent(time: "5:00 PM", title: "Youth Social & Games", kannada: nil, tag: .youth,
-                              details: "After the tournament, youth gather for casual games, introductions, and a chance to meet youth members from all 15 chapters across North America.",
-                              icon: "figure.run"),
                 ScheduleEvent(time: "6:30 PM", title: "Hotel Check-in & Welcome", kannada: "ಸ್ವಾಗತ", tag: .social,
                               details: "Check into your hotel and get settled. Volunteers will be at the lobby to welcome attendees and hand out convention packets.",
                               icon: "key.fill"),
@@ -241,12 +256,12 @@ struct ConventionData {
                 ScheduleEvent(time: "10:00 AM", title: "Dance Drama", kannada: "ನೃತ್ಯ ರೂಪಕ", tag: .cultural,
                               details: "A full-length dance drama performance by well-known professional artists combining classical dance forms with Kannada storytelling.",
                               icon: "figure.dance"),
-                ScheduleEvent(time: "12:30 PM", title: "Lunch & Youth Symphony", kannada: "ಭೋಜನ · ಯುವ ಸಂಗೀತ", tag: .meal,
-                              details: "Lunch served alongside the Youth Symphony — young Havyaka musicians from across North America showcase their talent.",
-                              icon: "music.note.list"),
-                ScheduleEvent(time: "2:30 PM", title: "HAA Fashion Show", kannada: "ಫ್ಯಾಷನ್ ಶೋ", tag: .cultural,
-                              details: "A vibrant showcase of traditional Havyaka attire and modern Indian fashion. Participants from all chapters walk the runway in sarees, dhotis, kurtas, and fusion wear. A celebration of cultural heritage through fashion.",
-                              icon: "tshirt.fill", isHighlight: true),
+                ScheduleEvent(time: "12:30 PM", title: "Lunch", kannada: "ಭೋಜನ", tag: .meal,
+                              details: "Full vegetarian lunch served at the main cafeteria. Traditional Havyaka cuisine with rice, sambar, rasam, and payasam.",
+                              icon: "fork.knife"),
+                ScheduleEvent(time: "2:00 PM", title: "Youth Symphony", kannada: "ಯುವ ಸಂಗೀತ", tag: .concert,
+                              details: "Young Havyaka musicians from across North America showcase their talent in an inspiring Youth Symphony performance.",
+                              icon: "music.note.list", isHighlight: true),
                 ScheduleEvent(time: "4:30 PM", title: "Chapter Cultural Programs", kannada: "ಸಾಂಸ್ಕೃತಿಕ ಕಾರ್ಯಕ್ರಮಗಳು", tag: .cultural,
                               details: "Continued chapter cultural performances. Open Dance Floor segment included for audience participation.",
                               icon: "theatermasks.fill"),
@@ -331,6 +346,17 @@ struct ConventionData {
             icon: "cart.fill",
             distanceNote: "~15–20 min drive"
         ),
+        ConventionLocation(
+            name: "Play N Thrive Club",
+            subtitle: "Pickleball Tournament Venue",
+            address: "808 IL-59 N, Ste 120, Naperville, IL 60540",
+            category: .sports,
+            coordinate: CLLocationCoordinate2D(latitude: 41.7568, longitude: -88.2231),
+            detail: "Site of the HAA Youth Committee Pickleball Tournament on Thursday, July 2. Play N Thrive Club features indoor acrylic courts, restrooms, water, lighting, and is wheelchair accessible.",
+            accentColor: Color(hex: "#166E3F"),
+            icon: "sportscourt.fill",
+            distanceNote: "Thu Jul 2 · 2:00 PM"
+        ),
     ]
 
     // MARK: Photos (placeholder — replace imageName with real asset names / URLs)
@@ -341,7 +367,6 @@ struct ConventionData {
         ConventionPhoto(imageName: "book.fill",        caption: "Havyasiri release",       uploadedBy: "Atlanta Chapter",    day: "July 3", eventTag: .openingCeremony,  accentColor: HAA.Colors.gold),
         ConventionPhoto(imageName: "theatermasks.fill",caption: "Yakshagana performance",  uploadedBy: "NorCal Chapter",     day: "July 4", eventTag: .yakshagana,       accentColor: HAA.Colors.gold),
         ConventionPhoto(imageName: "figure.dance",     caption: "Youth dance performance", uploadedBy: "SoCal Chapter",      day: "July 4", eventTag: .culturalPrograms, accentColor: HAA.Colors.gold),
-        ConventionPhoto(imageName: "tshirt.fill",      caption: "Fashion show walk",       uploadedBy: "Midwest Chapter",    day: "July 4", eventTag: .fashionShow,      accentColor: HAA.Colors.orange),
         ConventionPhoto(imageName: "music.note.list",  caption: "Youth Symphony",          uploadedBy: "Chicago Chapter",    day: "July 4", eventTag: .youthSymphony,    accentColor: HAA.Colors.gold),
         ConventionPhoto(imageName: "star.fill",        caption: "Awards ceremony",         uploadedBy: "New England Chapter",day: "July 4", eventTag: .openingCeremony,  accentColor: HAA.Colors.orange),
         ConventionPhoto(imageName: "fork.knife",       caption: "Traditional feast",       uploadedBy: "Houston Chapter",    day: "July 3", eventTag: .meals,            accentColor: Color(hex: "#1D9E75")),

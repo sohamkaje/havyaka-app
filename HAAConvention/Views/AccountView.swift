@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - Account View (Registration Login)
+// MARK: - Account View
 struct AccountView: View {
     @StateObject private var auth = AuthViewModel()
 
@@ -11,20 +11,23 @@ struct AccountView: View {
             if auth.isLoggedIn {
                 ProfileView(auth: auth)
             } else {
-                LoginView(auth: auth)
+                AccessView(auth: auth)
             }
         }
     }
 }
 
 // MARK: - Auth ViewModel
+@MainActor
 class AuthViewModel: ObservableObject {
     @Published var profile = AttendeeProfile()
     @Published var isLoggedIn = false
     @Published var isLoading = false
-    @Published var errorMessage: String? = nil
+    @Published var isSendingCode = false
+    @Published var errorMessage: String?
+    @Published var infoMessage: String?
+    @Published var rawServerResponse: String?
 
-    // Persistence via UserDefaults (swap for Firebase/Supabase in production)
     private let profileKey = "haa_attendee_profile"
 
     init() { loadSaved() }
@@ -43,40 +46,60 @@ class AuthViewModel: ObservableObject {
         }
     }
 
-    // Simulated lookup — replace with real API call to your backend / Firebase
-    func login(email: String, registrationID: String) {
-        guard !email.isEmpty, !registrationID.isEmpty else {
-            errorMessage = "Please enter both your email and registration ID."
+    func sendLoginCode(email: String) {
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            errorMessage = "Please enter the registrant email address."
             return
         }
+
+        isSendingCode = true
+        errorMessage = nil
+        infoMessage = nil
+        rawServerResponse = nil
+
+        Task {
+            let response = await RegistrationAPI.sendLoginCode(email: trimmed)
+            rawServerResponse = response.raw.displayText
+
+            switch response.result {
+            case .success(let message):
+                infoMessage = message
+            case .failure(let error):
+                errorMessage = error.localizedDescription
+            }
+            isSendingCode = false
+        }
+    }
+
+    func login(email: String, code: String) {
+        let trimmedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedCode = code.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmedEmail.isEmpty else {
+            errorMessage = "Please enter the registrant email address."
+            return
+        }
+
+        guard trimmedCode.count == 5, trimmedCode.allSatisfy(\.isNumber) else {
+            errorMessage = "Please enter your 5-digit login code."
+            return
+        }
+
         isLoading = true
         errorMessage = nil
 
-        // Simulate network delay then fake lookup
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
-            // TODO: Replace with real backend check, e.g.:
-            //   POST https://api.haaconvention.org/v1/attendee/lookup
-            //   Body: { "email": email, "registration_id": registrationID }
-            //   Response: { "found": true, "firstName": "...", ... }
-            let found = registrationID.uppercased().hasPrefix("HAA")  // demo rule
-
-            if found {
-                self.profile = AttendeeProfile(
-                    firstName: "Soham",
-                    lastName: "Kaje",
-                    email: email,
-                    chapter: "Midwest Chapter",
-                    registrationID: registrationID.uppercased(),
-                    membershipType: "Regular",
-                    dietaryNote: "No restrictions",
-                    isLoggedIn: true
-                )
-                self.save()
-                self.isLoggedIn = true
-            } else {
-                self.errorMessage = "No registration found for this email and ID. Please check and try again, or contact secretary@havyak.org."
+        Task {
+            do {
+                var loaded = try await RegistrationAPI.login(email: trimmedEmail, code: trimmedCode)
+                loaded.isLoggedIn = true
+                profile = loaded
+                save()
+                isLoggedIn = true
+            } catch {
+                errorMessage = error.localizedDescription
             }
-            self.isLoading = false
+            isLoading = false
         }
     }
 
@@ -87,164 +110,36 @@ class AuthViewModel: ObservableObject {
     }
 }
 
-// MARK: - Login View
-struct LoginView: View {
+// MARK: - Access View
+struct AccessView: View {
     @ObservedObject var auth: AuthViewModel
+    @State private var screen: AuthScreen = .welcome
     @State private var email = ""
-    @State private var registrationID = ""
-    @FocusState private var focusedField: LoginField?
+    @State private var loginCode = ""
+    @State private var signUpCodeSent = false
+    @FocusState private var focusedField: Field?
 
-    enum LoginField { case email, regID }
+    enum AuthScreen {
+        case welcome, signUp, logIn
+    }
+
+    enum Field {
+        case email, code
+    }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
-                // Hero
-                VStack(spacing: 14) {
-                    ZStack {
-                        Circle()
-                            .fill(HAA.Colors.orange.opacity(0.12))
-                            .frame(width: 80, height: 80)
-                        Image(systemName: "person.crop.circle.fill")
-                            .font(.system(size: 44))
-                            .foregroundColor(HAA.Colors.orange)
-                    }
-                    Text("Load Your Registration")
-                        .font(HAA.Font.serif(20, weight: .bold))
-                        .foregroundColor(HAA.Colors.charcoal)
-                    Text("Enter your registration email and the ID from your confirmation email to access your convention details.")
-                        .font(.system(size: 13, design: .rounded))
-                        .foregroundColor(HAA.Colors.muted)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 20)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 32)
-                .background(
-                    HAA.Colors.charcoal
-                        .overlay(
-                            LinearGradient(
-                                colors: [HAA.Colors.charcoal, HAA.Colors.deepBrown],
-                                startPoint: .top, endPoint: .bottom
-                            )
-                        )
-                )
+                hero
 
                 VStack(spacing: 20) {
-                    // Email field
-                    VStack(alignment: .leading, spacing: 6) {
-                        formLabel("Email Address")
-                        HStack(spacing: 10) {
-                            Image(systemName: "envelope.fill")
-                                .font(.system(size: 15))
-                                .foregroundColor(HAA.Colors.muted)
-                            TextField("your@email.com", text: $email)
-                                .font(.system(size: 15, design: .rounded))
-                                .keyboardType(.emailAddress)
-                                .autocapitalization(.none)
-                                .autocorrectionDisabled()
-                                .focused($focusedField, equals: .email)
-                        }
-                        .padding(14)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: HAA.Radius.md)
-                                .stroke(focusedField == .email ? HAA.Colors.orange : HAA.Colors.border,
-                                        lineWidth: focusedField == .email ? 1.5 : 0.5)
-                        )
-                    }
-
-                    // Registration ID field
-                    VStack(alignment: .leading, spacing: 6) {
-                        formLabel("Registration ID")
-                        HStack(spacing: 10) {
-                            Image(systemName: "ticket.fill")
-                                .font(.system(size: 15))
-                                .foregroundColor(HAA.Colors.muted)
-                            TextField("e.g. HAA2026-00123", text: $registrationID)
-                                .font(.system(size: 15, design: .rounded))
-                                .autocapitalization(.allCharacters)
-                                .autocorrectionDisabled()
-                                .focused($focusedField, equals: .regID)
-                        }
-                        .padding(14)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: HAA.Radius.md)
-                                .stroke(focusedField == .regID ? HAA.Colors.orange : HAA.Colors.border,
-                                        lineWidth: focusedField == .regID ? 1.5 : 0.5)
-                        )
-                        Text("Found in your registration confirmation email from haaconvention.org")
-                            .font(.system(size: 11, design: .rounded))
-                            .foregroundColor(HAA.Colors.muted)
-                    }
-
-                    // Error message
-                    if let err = auth.errorMessage {
-                        HStack(spacing: 8) {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.red)
-                                .font(.system(size: 14))
-                            Text(err)
-                                .font(.system(size: 13, design: .rounded))
-                                .foregroundColor(.red)
-                        }
-                        .padding(12)
-                        .background(Color.red.opacity(0.07))
-                        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-                    }
-
-                    // Login button
-                    Button {
-                        focusedField = nil
-                        auth.login(email: email, registrationID: registrationID)
-                    } label: {
-                        HStack(spacing: 8) {
-                            if auth.isLoading {
-                                ProgressView()
-                                    .tint(.white)
-                                    .scaleEffect(0.85)
-                            } else {
-                                Image(systemName: "arrow.right.circle.fill")
-                                    .font(.system(size: 18))
-                            }
-                            Text(auth.isLoading ? "Looking up your registration…" : "Load My Registration")
-                                .font(.system(size: 15, weight: .bold, design: .rounded))
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 15)
-                        .background(auth.isLoading ? HAA.Colors.muted : HAA.Colors.orange)
-                        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(auth.isLoading)
-
-                    // Demo note
-                    VStack(spacing: 6) {
-                        Divider()
-                        Text("DEMO MODE")
-                            .font(.system(size: 9, weight: .bold, design: .rounded))
-                            .tracking(1)
-                            .foregroundColor(HAA.Colors.muted)
-                        Text("Use any email + any ID starting with \"HAA\" (e.g. HAA2026-001) to simulate a successful login.")
-                            .font(.system(size: 11, design: .rounded))
-                            .foregroundColor(HAA.Colors.muted)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.top, 4)
-
-                    // Register link
-                    VStack(spacing: 6) {
-                        Text("Not registered yet?")
-                            .font(.system(size: 13, design: .rounded))
-                            .foregroundColor(HAA.Colors.muted)
-                        Link("Register at haaconvention.org →",
-                             destination: URL(string: "https://haaconvention.org/registration/")!)
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundColor(HAA.Colors.orange)
+                    switch screen {
+                    case .welcome:
+                        welcomeContent
+                    case .signUp:
+                        signUpContent
+                    case .logIn:
+                        logInContent
                     }
                 }
                 .padding(.horizontal, HAA.Spacing.lg)
@@ -255,7 +150,383 @@ struct LoginView: View {
         .background(HAA.Colors.cream.ignoresSafeArea())
     }
 
-    func formLabel(_ text: String) -> some View {
+    // MARK: - Welcome
+
+    private var hero: some View {
+        VStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(HAA.Colors.orange.opacity(0.12))
+                    .frame(width: 80, height: 80)
+                Image(systemName: "person.crop.circle.fill")
+                    .font(.system(size: 44))
+                    .foregroundColor(HAA.Colors.orange)
+            }
+            Text(heroTitle)
+                .font(HAA.Font.serif(20, weight: .bold))
+                .foregroundColor(Color(hex: "#F5E8C0"))
+            Text(heroSubtitle)
+                .font(.system(size: 13, design: .rounded))
+                .foregroundColor(HAA.Colors.mutedLight)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
+        .background(
+            HAA.Colors.charcoal
+                .overlay(
+                    LinearGradient(
+                        colors: [HAA.Colors.charcoal, HAA.Colors.deepBrown],
+                        startPoint: .top, endPoint: .bottom
+                    )
+                )
+        )
+    }
+
+    private var heroTitle: String {
+        switch screen {
+        case .welcome: return "My Account"
+        case .signUp:  return "Sign Up"
+        case .logIn:   return "Log In"
+        }
+    }
+
+    private var heroSubtitle: String {
+        switch screen {
+        case .welcome:
+            return "Sign up to receive your login code, or log in if you already have it."
+        case .signUp:
+            return "Enter the email of whoever registered your group. We'll email the 5-digit login code to that inbox."
+        case .logIn:
+            return "Enter the registrant email and the 5-digit code that was emailed to you."
+        }
+    }
+
+    private var welcomeContent: some View {
+        VStack(spacing: 12) {
+            primaryNavButton(title: "Sign Up", icon: "person.badge.plus") {
+                resetForm()
+                screen = .signUp
+            }
+
+            primaryNavButton(title: "Log In", icon: "arrow.right.circle") {
+                resetForm()
+                screen = .logIn
+            }
+
+            disabledNavButton(title: "Check In", icon: "checkmark.circle", note: "Coming soon")
+
+            registerLink
+        }
+    }
+
+    // MARK: - Sign Up
+
+    private var signUpContent: some View {
+        VStack(spacing: 20) {
+            backButton
+
+            emailField
+
+            if signUpCodeSent {
+                codeField
+                infoBanner
+                errorBanner
+                rawServerResponseBanner
+
+                Button {
+                    focusedField = nil
+                    auth.login(email: email, code: loginCode)
+                } label: {
+                    submitLabel(
+                        loading: auth.isLoading,
+                        loadingText: "Signing in…",
+                        text: "Complete Sign Up",
+                        icon: "checkmark.circle.fill"
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(auth.isLoading || auth.isSendingCode)
+            } else {
+                errorBanner
+                rawServerResponseBanner
+
+                Button {
+                    focusedField = nil
+                    auth.sendLoginCode(email: email)
+                } label: {
+                    submitLabel(
+                        loading: auth.isSendingCode,
+                        loadingText: "Sending code…",
+                        text: "Send Login Code",
+                        icon: "envelope.arrow.triangle.branch"
+                    )
+                }
+                .buttonStyle(.plain)
+                .disabled(auth.isSendingCode)
+            }
+
+            signUpHelp
+        }
+        .onChange(of: auth.infoMessage) { _, newValue in
+            if newValue != nil { signUpCodeSent = true }
+        }
+    }
+
+    // MARK: - Log In
+
+    private var logInContent: some View {
+        VStack(spacing: 20) {
+            backButton
+            emailField
+            codeField
+            infoBanner
+            errorBanner
+
+            Button {
+                focusedField = nil
+                auth.login(email: email, code: loginCode)
+            } label: {
+                submitLabel(
+                    loading: auth.isLoading,
+                    loadingText: "Signing in…",
+                    text: "Log In",
+                    icon: "arrow.right.circle.fill"
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(auth.isLoading)
+
+            logInHelp
+        }
+    }
+
+    // MARK: - Shared components
+
+    private var backButton: some View {
+        Button {
+            resetForm()
+            screen = .welcome
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 13, weight: .semibold))
+                Text("Back")
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+            }
+            .foregroundColor(HAA.Colors.muted)
+        }
+        .buttonStyle(.plain)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var emailField: some View {
+        formField(
+            label: "Registrant Email",
+            icon: "envelope.fill",
+            text: $email,
+            field: .email,
+            placeholder: "registrant@email.com",
+            keyboard: .emailAddress
+        )
+    }
+
+    private var codeField: some View {
+        formField(
+            label: "5-Digit Login Code",
+            icon: "lock.fill",
+            text: $loginCode,
+            field: .code,
+            placeholder: "12345",
+            keyboard: .numberPad
+        )
+        .onChange(of: loginCode) { _, newValue in
+            loginCode = String(newValue.filter(\.isNumber).prefix(5))
+        }
+    }
+
+    @ViewBuilder
+    private var infoBanner: some View {
+        if let info = auth.infoMessage {
+            banner(text: info, icon: "checkmark.circle.fill", color: Color(hex: "#166E3F"), bg: Color(hex: "#E8F8F0"))
+        }
+    }
+
+    @ViewBuilder
+    private var rawServerResponseBanner: some View {
+        if let raw = auth.rawServerResponse {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("SERVER RESPONSE")
+                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                    .tracking(0.8)
+                    .foregroundColor(HAA.Colors.muted)
+                Text(raw)
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundColor(HAA.Colors.charcoal)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .textSelection(.enabled)
+            }
+            .padding(12)
+            .background(Color(hex: "#F0EDE6"))
+            .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+        }
+    }
+
+    @ViewBuilder
+    private var errorBanner: some View {
+        if let err = auth.errorMessage {
+            banner(text: err, icon: "exclamationmark.triangle.fill", color: .red, bg: Color.red.opacity(0.07))
+        }
+    }
+
+    private var signUpHelp: some View {
+        helpCard("If someone else registered for you, use their email address — the login code will be sent to that inbox.")
+    }
+
+    private var logInHelp: some View {
+        helpCard("Use the registrant email and the 5-digit code from your email. Don't have a code yet? Go back and choose Sign Up.")
+    }
+
+    private var registerLink: some View {
+        VStack(spacing: 6) {
+            Text("Not registered yet?")
+                .font(.system(size: 13, design: .rounded))
+                .foregroundColor(HAA.Colors.muted)
+            Link("Register at haaconvention.org →",
+                 destination: URL(string: "https://haaconvention.org/registration/")!)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundColor(HAA.Colors.orange)
+        }
+        .padding(.top, 8)
+    }
+
+    private func resetForm() {
+        email = ""
+        loginCode = ""
+        signUpCodeSent = false
+        auth.errorMessage = nil
+        auth.infoMessage = nil
+        auth.rawServerResponse = nil
+        focusedField = nil
+    }
+
+    private func primaryNavButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                Text(title)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .opacity(0.5)
+            }
+            .foregroundColor(HAA.Colors.charcoal)
+            .padding(16)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: HAA.Radius.md)
+                    .stroke(HAA.Colors.border, lineWidth: 0.5)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func disabledNavButton(title: String, icon: String, note: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 18))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                Text(note)
+                    .font(.system(size: 11, design: .rounded))
+            }
+            Spacer()
+        }
+        .foregroundColor(HAA.Colors.muted)
+        .padding(16)
+        .background(Color.white.opacity(0.6))
+        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+        .overlay(
+            RoundedRectangle(cornerRadius: HAA.Radius.md)
+                .stroke(HAA.Colors.border, lineWidth: 0.5)
+        )
+    }
+
+    private func submitLabel(loading: Bool, loadingText: String, text: String, icon: String) -> some View {
+        HStack(spacing: 8) {
+            if loading {
+                ProgressView().tint(.white).scaleEffect(0.85)
+            } else {
+                Image(systemName: icon).font(.system(size: 18))
+            }
+            Text(loading ? loadingText : text)
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+        }
+        .foregroundColor(.white)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 15)
+        .background(loading ? HAA.Colors.muted : HAA.Colors.orange)
+        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+    }
+
+    private func helpCard(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 12, design: .rounded))
+            .foregroundColor(HAA.Colors.muted)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(14)
+            .background(HAA.Colors.goldLight.opacity(0.45))
+            .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+    }
+
+    private func banner(text: String, icon: String, color: Color, bg: Color) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon).foregroundColor(color).font(.system(size: 14))
+            Text(text).font(.system(size: 13, design: .rounded)).foregroundColor(color)
+        }
+        .padding(12)
+        .background(bg)
+        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+    }
+
+    private func formField(
+        label: String,
+        icon: String,
+        text: Binding<String>,
+        field: Field,
+        placeholder: String,
+        keyboard: UIKeyboardType = .default
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            formLabel(label)
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 15))
+                    .foregroundColor(HAA.Colors.muted)
+                TextField(placeholder, text: text)
+                    .font(.system(size: 15, design: .rounded))
+                    .keyboardType(keyboard)
+                    .textInputAutocapitalization(keyboard == .emailAddress ? .never : .never)
+                    .autocorrectionDisabled()
+                    .focused($focusedField, equals: field)
+            }
+            .padding(14)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+            .overlay(
+                RoundedRectangle(cornerRadius: HAA.Radius.md)
+                    .stroke(focusedField == field ? HAA.Colors.orange : HAA.Colors.border,
+                            lineWidth: focusedField == field ? 1.5 : 0.5)
+            )
+        }
+    }
+
+    private func formLabel(_ text: String) -> some View {
         Text(text.uppercased())
             .font(.system(size: 10, weight: .bold, design: .rounded))
             .tracking(0.8)
@@ -263,7 +534,7 @@ struct LoginView: View {
     }
 }
 
-// MARK: - Profile View (logged in)
+// MARK: - Profile View
 struct ProfileView: View {
     @ObservedObject var auth: AuthViewModel
     @State private var showLogoutConfirm = false
@@ -271,20 +542,15 @@ struct ProfileView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
-                // Profile header
                 profileHeader
 
-                // Registration card
                 VStack(spacing: 10) {
-                    registrationCard
-                    chapterCard
-                    qrPlaceholderCard
+                    accountCard
                     helpCard
                 }
                 .padding(.horizontal, HAA.Spacing.lg)
                 .padding(.top, 20)
 
-                // Logout
                 Button { showLogoutConfirm = true } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "rectangle.portrait.and.arrow.right")
@@ -313,17 +579,13 @@ struct ProfileView: View {
         .background(HAA.Colors.cream.ignoresSafeArea())
     }
 
-    // MARK: - Profile Header
-    var profileHeader: some View {
+    private var profileHeader: some View {
         ZStack(alignment: .bottom) {
-            HAA.Colors.charcoal
-                .frame(height: 180)
+            HAA.Colors.charcoal.frame(height: 180)
 
             VStack(spacing: 10) {
                 ZStack {
-                    Circle()
-                        .fill(HAA.Colors.orange)
-                        .frame(width: 70, height: 70)
+                    Circle().fill(HAA.Colors.orange).frame(width: 70, height: 70)
                     Text(initials)
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
@@ -342,74 +604,31 @@ struct ProfileView: View {
         }
     }
 
-    var initials: String {
+    private var initials: String {
         let f = auth.profile.firstName.first.map(String.init) ?? ""
         let l = auth.profile.lastName.first.map(String.init) ?? ""
         return f + l
     }
 
-    // MARK: - Cards
-    var registrationCard: some View {
+    private var accountCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            cardHeader(icon: "ticket.fill", title: "Registration Details", color: HAA.Colors.orange)
+            cardHeader(icon: "person.text.rectangle.fill", title: "Account", color: HAA.Colors.orange)
             Divider()
-            profileRow(icon: "number", label: "Registration ID", value: auth.profile.registrationID)
-            profileRow(icon: "person.fill", label: "Membership Type", value: auth.profile.membershipType)
-            profileRow(icon: "leaf.fill", label: "Dietary Note", value: auth.profile.dietaryNote.isEmpty ? "None noted" : auth.profile.dietaryNote)
+            profileRow(icon: "person.fill", label: "First Name", value: auth.profile.firstName)
+            profileRow(icon: "person.fill", label: "Last Name", value: auth.profile.lastName)
+            profileRow(icon: "envelope.fill", label: "Linked Email", value: auth.profile.email)
         }
         .haaCard()
     }
 
-    var chapterCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            cardHeader(icon: "building.2.fill", title: "Chapter", color: HAA.Colors.gold)
-            Divider()
-            profileRow(icon: "mappin.circle.fill", label: "Chapter", value: auth.profile.chapter)
-        }
-        .haaCard()
-    }
-
-    var qrPlaceholderCard: some View {
-        VStack(spacing: 12) {
-            cardHeader(icon: "qrcode", title: "Convention Pass", color: HAA.Colors.charcoal)
-            Divider()
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(hex: "#F0EDE6"))
-                    .frame(height: 130)
-                VStack(spacing: 8) {
-                    Image(systemName: "qrcode")
-                        .font(.system(size: 48))
-                        .foregroundColor(HAA.Colors.charcoal.opacity(0.25))
-                    Text("QR code will be generated when connected to the HAA backend")
-                        .font(.system(size: 11, design: .rounded))
-                        .foregroundColor(HAA.Colors.muted)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 20)
-                }
-            }
-        }
-        .haaCard()
-    }
-
-    var helpCard: some View {
+    private var helpCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             cardHeader(icon: "questionmark.circle.fill", title: "Need Help?", color: Color(hex: "#185FA5"))
             Divider()
             Link(destination: URL(string: "mailto:secretary@havyak.org")!) {
                 HStack(spacing: 8) {
-                    Image(systemName: "envelope.fill")
-                        .font(.system(size: 14))
+                    Image(systemName: "envelope.fill").font(.system(size: 14))
                     Text("Contact secretary@havyak.org")
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                }
-                .foregroundColor(Color(hex: "#185FA5"))
-            }
-            Link(destination: URL(string: "https://haaconvention.org")!) {
-                HStack(spacing: 8) {
-                    Image(systemName: "globe")
-                        .font(.system(size: 14))
-                    Text("Visit haaconvention.org")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                 }
                 .foregroundColor(Color(hex: "#185FA5"))
@@ -418,24 +637,16 @@ struct ProfileView: View {
         .haaCard()
     }
 
-    func cardHeader(icon: String, title: String, color: Color) -> some View {
+    private func cardHeader(icon: String, title: String, color: Color) -> some View {
         HStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(color)
-            Text(title)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundColor(HAA.Colors.charcoal)
+            Image(systemName: icon).font(.system(size: 15, weight: .semibold)).foregroundColor(color)
+            Text(title).font(.system(size: 15, weight: .bold, design: .rounded)).foregroundColor(HAA.Colors.charcoal)
         }
     }
 
-    func profileRow(icon: String, label: String, value: String) -> some View {
+    private func profileRow(icon: String, label: String, value: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
-            Image(systemName: icon)
-                .font(.system(size: 13))
-                .foregroundColor(HAA.Colors.gold)
-                .frame(width: 18)
-                .padding(.top, 1)
+            Image(systemName: icon).font(.system(size: 13)).foregroundColor(HAA.Colors.gold).frame(width: 18).padding(.top, 1)
             VStack(alignment: .leading, spacing: 2) {
                 Text(label.uppercased())
                     .font(.system(size: 9, weight: .bold, design: .rounded))

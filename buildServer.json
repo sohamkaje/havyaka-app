@@ -1,0 +1,19 @@
+{
+	"name": "xcode build server",
+	"version": "1.3.0",
+	"bspVersion": "2.2.0",
+	"languages": [
+		"c",
+		"cpp",
+		"objective-c",
+		"objective-cpp",
+		"swift"
+	],
+	"argv": [
+		"/usr/local/bin/xcode-build-server"
+	],
+	"workspace": "/Users/mkaje/havyaka-app/HAAConvention.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/mkaje/Library/Developer/Xcode/DerivedData/HAAConvention-crqtuqnaffiiuhgrnlouflhmfjih",
+	"scheme": "HAAConvention",
+	"kind": "xcode"
+}
