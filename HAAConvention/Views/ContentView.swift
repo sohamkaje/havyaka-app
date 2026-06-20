@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var auth: AuthViewModel
     @State private var selectedTab: Int = 0
 
     var body: some View {
@@ -9,7 +10,7 @@ struct ContentView: View {
                 HomeView()     .tag(0)
                 ScheduleView() .tag(1)
                 MapView()      .tag(2)
-                PhotosView()   .tag(3)
+                PhotosView(selectedTab: $selectedTab)   .tag(3)
                 InfoView()     .tag(4)
                 AccountView()  .tag(5)
             }

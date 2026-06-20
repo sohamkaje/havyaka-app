@@ -113,6 +113,26 @@ struct ConventionLocation: Identifiable {
 
 // MARK: - Photo Models
 
+// MARK: - Photo Models
+
+enum PhotoMediaType: String, Codable {
+    case image
+    case video
+}
+
+enum PhotosLimits {
+    static let maxUploadBytes: Int64 = 45 * 1024 * 1024
+    static var maxUploadMB: Int { Int(maxUploadBytes / (1024 * 1024)) }
+
+    static func validateFileSize(_ byteCount: Int64) -> String? {
+        guard byteCount > 0 else { return "Could not read the selected file." }
+        guard byteCount <= maxUploadBytes else {
+            return "File is too large. Maximum size is \(maxUploadMB) MB."
+        }
+        return nil
+    }
+}
+
 /// Event tags that can be applied to individual photos
 enum PhotoEventTag: String, CaseIterable, Identifiable {
     var id: String { rawValue }
@@ -147,13 +167,39 @@ enum PhotoEventTag: String, CaseIterable, Identifiable {
 }
 
 struct ConventionPhoto: Identifiable {
-    let id = UUID()
-    let imageName: String   // SF Symbol placeholder; replace with real image asset/URL
+    let id: String
+    var mediaURL: String?
+    let imageName: String
     let caption: String
     let uploadedBy: String
-    let day: String         // "July 2", "July 3", "July 4", "July 5"
+    let day: String
     let eventTag: PhotoEventTag
+    let mediaType: PhotoMediaType
     let accentColor: Color
+
+    init(
+        id: String = UUID().uuidString,
+        mediaURL: String? = nil,
+        imageName: String = "photo.fill",
+        caption: String,
+        uploadedBy: String,
+        day: String,
+        eventTag: PhotoEventTag,
+        mediaType: PhotoMediaType = .image,
+        accentColor: Color = HAA.Colors.orange
+    ) {
+        self.id = id
+        self.mediaURL = mediaURL
+        self.imageName = imageName
+        self.caption = caption
+        self.uploadedBy = uploadedBy
+        self.day = day
+        self.eventTag = eventTag
+        self.mediaType = mediaType
+        self.accentColor = accentColor
+    }
+
+    var isVideo: Bool { mediaType == .video }
 }
 
 /// Album filter shown in the photo tab bar

@@ -1,13 +1,19 @@
 import SwiftUI
 import PhotosUI
+import UniformTypeIdentifiers
 
 // MARK: - Photos View
 struct PhotosView: View {
+    @EnvironmentObject var auth: AuthViewModel
+    @Binding var selectedTab: Int
+
     @State private var selectedDayFilter: String = "All"
     @State private var selectedEventFilter: PhotoEventTag? = nil
     @State private var showUploadSheet = false
-    @State private var photos = ConventionData.photos
+    @State private var photos: [ConventionPhoto] = []
     @State private var selectedPhoto: ConventionPhoto? = nil
+    @State private var isLoadingGallery = false
+    @State private var galleryError: String?
 
     let dayFilters = ["All", "July 2", "July 3", "July 4", "July 5"]
 
@@ -19,7 +25,7 @@ struct PhotosView: View {
 
     var filteredPhotos: [ConventionPhoto] {
         photos.filter { photo in
-            let dayMatch  = selectedDayFilter == "All" || photo.day == selectedDayFilter
+            let dayMatch = selectedDayFilter == "All" || photo.day == selectedDayFilter
             let eventMatch = selectedEventFilter == nil || photo.eventTag == selectedEventFilter
             return dayMatch && eventMatch
         }
@@ -28,13 +34,31 @@ struct PhotosView: View {
     var body: some View {
         VStack(spacing: 0) {
             HAANavBar(title: "Photos", subtitle: "Convention memories")
+
+            if auth.isLoggedIn {
+                galleryContent
+            } else {
+                PhotosLoginGate(selectedTab: $selectedTab)
+            }
+        }
+        .task(id: auth.isLoggedIn) {
+            guard auth.isLoggedIn else { return }
+            await loadGallery()
+        }
+    }
+
+    private var galleryContent: some View {
+        VStack(spacing: 0) {
             uploadBanner
             dayFilterRow
             eventFilterRow
             photoCountBar
 
             ScrollView(showsIndicators: false) {
-                if filteredPhotos.isEmpty {
+                if isLoadingGallery && photos.isEmpty {
+                    ProgressView("Loading gallery…")
+                        .padding(.top, 60)
+                } else if filteredPhotos.isEmpty {
                     emptyState
                 } else {
                     LazyVGrid(columns: columns, spacing: 2) {
@@ -49,7 +73,11 @@ struct PhotosView: View {
             .background(HAA.Colors.cream)
         }
         .sheet(isPresented: $showUploadSheet) {
-            UploadPhotoSheet(isPresented: $showUploadSheet) { newPhoto in
+            UploadPhotoSheet(
+                isPresented: $showUploadSheet,
+                uploaderName: auth.displayName,
+                uploaderEmail: auth.profile.email
+            ) { newPhoto in
                 withAnimation { photos.insert(newPhoto, at: 0) }
             }
         }
@@ -58,7 +86,19 @@ struct PhotosView: View {
         }
     }
 
-    // MARK: - Upload Banner
+    func loadGallery() async {
+        isLoadingGallery = true
+        galleryError = nil
+        do {
+            let remote = try await PhotosAPI.fetchGallery()
+            photos = remote.isEmpty ? ConventionData.photos : remote
+        } catch {
+            galleryError = error.localizedDescription
+            if photos.isEmpty { photos = ConventionData.photos }
+        }
+        isLoadingGallery = false
+    }
+
     var uploadBanner: some View {
         Button { showUploadSheet = true } label: {
             HStack(spacing: 12) {
@@ -74,7 +114,7 @@ struct PhotosView: View {
                     Text("Share your convention moments")
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(HAA.Colors.charcoal)
-                    Text("Visible to all ~500 attendees")
+                    Text("Photos & videos up to \(PhotosLimits.maxUploadMB) MB")
                         .font(.system(size: 11, design: .rounded))
                         .foregroundColor(HAA.Colors.muted)
                 }
@@ -94,7 +134,6 @@ struct PhotosView: View {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Day Filter Row
     var dayFilterRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
@@ -122,19 +161,15 @@ struct PhotosView: View {
         .background(Color.white)
     }
 
-    // MARK: - Event Filter Row
     var eventFilterRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                // "All Events" clear chip
                 Button {
                     withAnimation(.spring(response: 0.3)) { selectedEventFilter = nil }
                 } label: {
                     HStack(spacing: 4) {
-                        Image(systemName: "photo.stack.fill")
-                            .font(.system(size: 10))
-                        Text("All Events")
-                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        Image(systemName: "photo.stack.fill").font(.system(size: 10))
+                        Text("All Events").font(.system(size: 11, weight: .semibold, design: .rounded))
                     }
                     .foregroundColor(selectedEventFilter == nil ? HAA.Colors.orange : HAA.Colors.muted)
                     .padding(.horizontal, 12)
@@ -155,10 +190,8 @@ struct PhotosView: View {
                         }
                     } label: {
                         HStack(spacing: 4) {
-                            Image(systemName: tag.icon)
-                                .font(.system(size: 10))
-                            Text(tag.rawValue)
-                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                            Image(systemName: tag.icon).font(.system(size: 10))
+                            Text(tag.rawValue).font(.system(size: 11, weight: .semibold, design: .rounded))
                         }
                         .foregroundColor(isSelected ? HAA.Colors.orange : HAA.Colors.muted)
                         .padding(.horizontal, 12)
@@ -176,16 +209,12 @@ struct PhotosView: View {
             .padding(.vertical, 8)
         }
         .background(Color.white)
-        .overlay(
-            Rectangle().fill(HAA.Colors.border).frame(height: 0.5),
-            alignment: .bottom
-        )
+        .overlay(Rectangle().fill(HAA.Colors.border).frame(height: 0.5), alignment: .bottom)
     }
 
-    // MARK: - Count Bar
     var photoCountBar: some View {
         HStack {
-            Text("\(filteredPhotos.count) photo\(filteredPhotos.count == 1 ? "" : "s")")
+            Text("\(filteredPhotos.count) item\(filteredPhotos.count == 1 ? "" : "s")")
                 .font(.system(size: 12, weight: .medium, design: .rounded))
                 .foregroundColor(HAA.Colors.muted)
             if selectedEventFilter != nil || selectedDayFilter != "All" {
@@ -196,10 +225,8 @@ struct PhotosView: View {
             Spacer()
             Button { showUploadSheet = true } label: {
                 HStack(spacing: 4) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 11, weight: .bold))
-                    Text("Add yours")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    Image(systemName: "plus").font(.system(size: 11, weight: .bold))
+                    Text("Add yours").font(.system(size: 12, weight: .semibold, design: .rounded))
                 }
                 .foregroundColor(HAA.Colors.orange)
             }
@@ -215,9 +242,11 @@ struct PhotosView: View {
             Image(systemName: "photo.on.rectangle.angled")
                 .font(.system(size: 40))
                 .foregroundColor(HAA.Colors.muted.opacity(0.4))
-            Text("No photos match this filter")
+            Text(galleryError ?? "No photos match this filter")
                 .font(.system(size: 14, design: .rounded))
                 .foregroundColor(HAA.Colors.muted)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 24)
             Button { showUploadSheet = true } label: {
                 Text("Be the first to upload")
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -229,6 +258,43 @@ struct PhotosView: View {
     }
 }
 
+// MARK: - Login Gate
+struct PhotosLoginGate: View {
+    @Binding var selectedTab: Int
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            Image(systemName: "lock.fill")
+                .font(.system(size: 44))
+                .foregroundColor(HAA.Colors.orange.opacity(0.7))
+            Text("Sign in to view photos")
+                .font(HAA.Font.serif(22, weight: .bold))
+                .foregroundColor(HAA.Colors.charcoal)
+            Text("The shared convention gallery is available to logged-in attendees only.")
+                .font(.system(size: 14, design: .rounded))
+                .foregroundColor(HAA.Colors.muted)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+            Button {
+                withAnimation { selectedTab = 5 }
+            } label: {
+                Text("Go to Account")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 14)
+                    .background(HAA.Colors.orange)
+                    .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+            }
+            .buttonStyle(.plain)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(HAA.Colors.cream)
+    }
+}
+
 // MARK: - Photo Tile
 struct PhotoTile: View {
     let photo: ConventionPhoto
@@ -236,10 +302,45 @@ struct PhotoTile: View {
     var body: some View {
         GeometryReader { _ in
             ZStack {
-                photo.accentColor.opacity(0.15)
-                Image(systemName: photo.imageName)
-                    .font(.system(size: 28, weight: .semibold))
-                    .foregroundColor(photo.accentColor.opacity(0.7))
+                if let urlString = photo.mediaURL, let url = URL(string: urlString) {
+                    if photo.isVideo {
+                        Color.black.opacity(0.85)
+                        Image(systemName: "play.circle.fill")
+                            .font(.system(size: 36))
+                            .foregroundColor(.white.opacity(0.9))
+                    } else {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable().scaledToFill()
+                            default:
+                                photo.accentColor.opacity(0.15)
+                            }
+                        }
+                    }
+                } else {
+                    photo.accentColor.opacity(0.15)
+                    Image(systemName: photo.imageName)
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundColor(photo.accentColor.opacity(0.7))
+                }
+
+                if photo.isVideo {
+                    VStack {
+                        HStack {
+                            Spacer()
+                            Image(systemName: "video.fill")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding(5)
+                                .background(Color.black.opacity(0.55))
+                                .clipShape(Circle())
+                                .padding(6)
+                        }
+                        Spacer()
+                    }
+                }
+
                 VStack {
                     Spacer()
                     Text(photo.caption)
@@ -266,16 +367,20 @@ struct PhotoTile: View {
 // MARK: - Upload Photo Sheet
 struct UploadPhotoSheet: View {
     @Binding var isPresented: Bool
+    let uploaderName: String
+    let uploaderEmail: String
     let onUpload: (ConventionPhoto) -> Void
 
-    @State private var caption        = ""
-    @State private var selectedDay    = "July 3"
-    @State private var selectedTag    = PhotoEventTag.general
-    @State private var uploaderName   = ""
+    @State private var caption = ""
+    @State private var selectedDay = "July 3"
+    @State private var selectedTag = PhotoEventTag.general
     @State private var selectedItem: PhotosPickerItem? = nil
-    @State private var selectedImageData: Data? = nil
-    @State private var showSuccess    = false
-    @State private var isUploading    = false
+    @State private var selectedFileData: Data? = nil
+    @State private var selectedMediaType: PhotoMediaType = .image
+    @State private var selectedFileName = "upload.jpg"
+    @State private var showSuccess = false
+    @State private var isUploading = false
+    @State private var uploadError: String?
 
     let days = ["July 2", "July 3", "July 4", "July 5"]
 
@@ -283,25 +388,32 @@ struct UploadPhotoSheet: View {
         NavigationView {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
-                    photoPickerSection
+                    mediaPickerSection
                     Divider().padding(.vertical, 20)
                     formSection
                     Spacer().frame(height: 20)
 
-                    if showSuccess {
-                        successBanner
+                    if let uploadError {
+                        Text(uploadError)
+                            .font(.system(size: 13, design: .rounded))
+                            .foregroundColor(.red)
                             .padding(.horizontal, HAA.Spacing.lg)
+                            .padding(.bottom, 8)
+                    }
+
+                    if showSuccess {
+                        successBanner.padding(.horizontal, HAA.Spacing.lg)
                     } else {
                         HAAButton(
                             label: isUploading ? "Uploading…" : "Share with Everyone",
                             icon: isUploading ? nil : "arrow.up.circle.fill",
                             action: handleUpload
                         )
-                        .disabled(isUploading)
+                        .disabled(isUploading || selectedFileData == nil)
                         .padding(.horizontal, HAA.Spacing.lg)
                     }
 
-                    Text("Your photo will be visible to all convention attendees and reusable in future HAA apps.")
+                    Text("Max file size: \(PhotosLimits.maxUploadMB) MB. Shared with all logged-in attendees.")
                         .font(.system(size: 11, design: .rounded))
                         .foregroundColor(HAA.Colors.muted)
                         .multilineTextAlignment(.center)
@@ -313,26 +425,19 @@ struct UploadPhotoSheet: View {
                 .padding(.top, 8)
             }
             .background(HAA.Colors.cream.ignoresSafeArea())
-            .navigationTitle("Add Photo")
+            .navigationTitle("Add Photo or Video")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") { isPresented = false }
-                        .font(.system(size: 15, design: .rounded))
                         .foregroundColor(HAA.Colors.muted)
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { isPresented = false }
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        .foregroundColor(HAA.Colors.orange)
                 }
             }
         }
     }
 
-    // MARK: Photo Picker
-    var photoPickerSection: some View {
-        PhotosPicker(selection: $selectedItem, matching: .images) {
+    var mediaPickerSection: some View {
+        PhotosPicker(selection: $selectedItem, matching: .any(of: [.images, .videos])) {
             ZStack {
                 RoundedRectangle(cornerRadius: HAA.Radius.lg)
                     .fill(Color.white)
@@ -343,12 +448,12 @@ struct UploadPhotoSheet: View {
                             .foregroundColor(HAA.Colors.orange.opacity(0.5))
                     )
 
-                if selectedImageData != nil {
+                if selectedFileData != nil {
                     VStack(spacing: 8) {
-                        Image(systemName: "checkmark.circle.fill")
+                        Image(systemName: selectedMediaType == .video ? "video.fill" : "checkmark.circle.fill")
                             .font(.system(size: 36))
                             .foregroundColor(Color(hex: "#1D9E75"))
-                        Text("Photo selected")
+                        Text(selectedMediaType == .video ? "Video selected" : "Photo selected")
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundColor(Color(hex: "#1D9E75"))
                         Text("Tap to change")
@@ -360,10 +465,10 @@ struct UploadPhotoSheet: View {
                         Image(systemName: "photo.badge.plus")
                             .font(.system(size: 36, weight: .light))
                             .foregroundColor(HAA.Colors.orange)
-                        Text("Tap to choose a photo")
+                        Text("Tap to choose a photo or video")
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundColor(HAA.Colors.charcoal)
-                        Text("From your camera roll")
+                        Text("Up to \(PhotosLimits.maxUploadMB) MB")
                             .font(.system(size: 12, design: .rounded))
                             .foregroundColor(HAA.Colors.muted)
                     }
@@ -372,22 +477,36 @@ struct UploadPhotoSheet: View {
             .padding(.horizontal, HAA.Spacing.lg)
         }
         .onChange(of: selectedItem) { _, newItem in
-            Task {
-                if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                    selectedImageData = data
-                }
-            }
+            Task { await loadSelectedItem(newItem) }
         }
     }
 
-    // MARK: Form
+    func loadSelectedItem(_ item: PhotosPickerItem?) async {
+        uploadError = nil
+        guard let item else {
+            selectedFileData = nil
+            return
+        }
+
+        let isVideo = item.supportedContentTypes.contains { $0.conforms(to: .movie) || $0.conforms(to: .video) }
+        selectedMediaType = isVideo ? .video : .image
+        selectedFileName = isVideo ? "upload.mp4" : "upload.jpg"
+
+        if let data = try? await item.loadTransferable(type: Data.self) {
+            if let sizeError = PhotosLimits.validateFileSize(Int64(data.count)) {
+                uploadError = sizeError
+                selectedFileData = nil
+                return
+            }
+            selectedFileData = data
+        }
+    }
+
     var formSection: some View {
         VStack(alignment: .leading, spacing: 20) {
-
-            // Caption
             VStack(alignment: .leading, spacing: 6) {
                 fieldLabel("Caption")
-                TextField("What's happening in this photo?", text: $caption, axis: .vertical)
+                TextField("What's happening?", text: $caption, axis: .vertical)
                     .font(.system(size: 14, design: .rounded))
                     .padding(12)
                     .background(Color.white)
@@ -396,18 +515,18 @@ struct UploadPhotoSheet: View {
                     .lineLimit(3)
             }
 
-            // Name
             VStack(alignment: .leading, spacing: 6) {
-                fieldLabel("Your name / Chapter")
-                TextField("e.g. Midwest Chapter, or Priya Bhat", text: $uploaderName)
-                    .font(.system(size: 14, design: .rounded))
+                fieldLabel("Shared as")
+                Text(uploaderName)
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    .foregroundColor(HAA.Colors.charcoal)
                     .padding(12)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .background(Color.white)
                     .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
                     .overlay(RoundedRectangle(cornerRadius: HAA.Radius.md).stroke(HAA.Colors.border, lineWidth: 0.5))
             }
 
-            // Day picker
             VStack(alignment: .leading, spacing: 8) {
                 fieldLabel("Convention Day")
                 HStack(spacing: 8) {
@@ -422,23 +541,15 @@ struct UploadPhotoSheet: View {
                                 .padding(.vertical, 8)
                                 .background(selectedDay == day ? HAA.Colors.orange : Color.white)
                                 .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.sm))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: HAA.Radius.sm)
-                                        .stroke(selectedDay == day ? Color.clear : HAA.Colors.border, lineWidth: 0.5)
-                                )
                         }
                         .buttonStyle(.plain)
                     }
                 }
             }
 
-            // Event Tag picker
             VStack(alignment: .leading, spacing: 8) {
                 fieldLabel("Event Tag")
-                LazyVGrid(
-                    columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())],
-                    spacing: 8
-                ) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                     ForEach(PhotoEventTag.allCases) { tag in
                         let isSelected = selectedTag == tag
                         Button {
@@ -458,10 +569,6 @@ struct UploadPhotoSheet: View {
                             .padding(.vertical, 10)
                             .background(isSelected ? HAA.Colors.orangeLight : Color.white)
                             .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: HAA.Radius.md)
-                                    .stroke(isSelected ? HAA.Colors.orange.opacity(0.5) : HAA.Colors.border, lineWidth: isSelected ? 1 : 0.5)
-                            )
                         }
                         .buttonStyle(.plain)
                     }
@@ -484,10 +591,10 @@ struct UploadPhotoSheet: View {
                 .font(.system(size: 22))
                 .foregroundColor(Color(hex: "#1D9E75"))
             VStack(alignment: .leading, spacing: 2) {
-                Text("Photo shared!")
+                Text("Shared!")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundColor(Color(hex: "#1D9E75"))
-                Text("Now visible to all attendees")
+                Text("Now visible in the gallery")
                     .font(.system(size: 12, design: .rounded))
                     .foregroundColor(HAA.Colors.muted)
             }
@@ -499,22 +606,32 @@ struct UploadPhotoSheet: View {
     }
 
     func handleUpload() {
+        guard let data = selectedFileData else { return }
         isUploading = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            let icons = ["photo.fill", "heart.fill", "star.fill", "sparkles"]
-            let newPhoto = ConventionPhoto(
-                imageName:   icons.randomElement() ?? "photo.fill",
-                caption:     caption.isEmpty ? "Convention moment" : caption,
-                uploadedBy:  uploaderName.isEmpty ? "Anonymous" : uploaderName,
-                day:         selectedDay,
-                eventTag:    selectedTag,
-                accentColor: HAA.Colors.orange
-            )
-            onUpload(newPhoto)
-            isUploading = false
-            showSuccess  = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+        uploadError = nil
+
+        Task {
+            do {
+                let mime = selectedMediaType == .video ? "video/mp4" : "image/jpeg"
+                let photo = try await PhotosAPI.upload(
+                    fileData: data,
+                    fileName: selectedFileName,
+                    mimeType: mime,
+                    mediaType: selectedMediaType,
+                    caption: caption.isEmpty ? "Convention moment" : caption,
+                    day: selectedDay,
+                    eventTag: selectedTag,
+                    uploadedBy: uploaderName,
+                    uploaderEmail: uploaderEmail
+                )
+                onUpload(photo)
+                isUploading = false
+                showSuccess = true
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
                 isPresented = false
+            } catch {
+                uploadError = error.localizedDescription
+                isUploading = false
             }
         }
     }
@@ -529,24 +646,33 @@ struct PhotoDetailSheet: View {
         NavigationView {
             VStack(spacing: 0) {
                 ZStack {
-                    photo.accentColor.opacity(0.12)
-                    Image(systemName: photo.imageName)
-                        .font(.system(size: 80, weight: .light))
-                        .foregroundColor(photo.accentColor.opacity(0.6))
+                    if let urlString = photo.mediaURL, let url = URL(string: urlString), !photo.isVideo {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable().scaledToFit()
+                            default:
+                                placeholderMedia
+                            }
+                        }
+                    } else {
+                        placeholderMedia
+                    }
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 300)
+                .background(Color.black.opacity(0.05))
 
                 VStack(alignment: .leading, spacing: 14) {
+                    attributionBox
+
                     Text(photo.caption)
                         .font(HAA.Font.serif(20, weight: .bold))
                         .foregroundColor(HAA.Colors.charcoal)
 
                     HStack(spacing: 8) {
-                        // Event tag chip
                         HStack(spacing: 4) {
-                            Image(systemName: photo.eventTag.icon)
-                                .font(.system(size: 10))
+                            Image(systemName: photo.eventTag.icon).font(.system(size: 10))
                             Text(photo.eventTag.rawValue)
                                 .font(.system(size: 11, weight: .semibold, design: .rounded))
                         }
@@ -560,43 +686,12 @@ struct PhotoDetailSheet: View {
                             .font(.system(size: 12, design: .rounded))
                             .foregroundColor(HAA.Colors.muted)
                     }
-
-                    Label(photo.uploadedBy, systemImage: "person.fill")
-                        .font(.system(size: 13, design: .rounded))
-                        .foregroundColor(HAA.Colors.muted)
-
-                    Divider()
-
-                    HStack(spacing: 12) {
-                        Button {} label: {
-                            Label("Share", systemImage: "square.and.arrow.up")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(HAA.Colors.orange)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(HAA.Colors.orangeLight)
-                                .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-                        }
-                        .buttonStyle(.plain)
-
-                        Button {} label: {
-                            Label("Save", systemImage: "arrow.down.circle.fill")
-                                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .background(HAA.Colors.orange)
-                                .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-                        }
-                        .buttonStyle(.plain)
-                    }
                 }
                 .padding(HAA.Spacing.lg)
                 .background(HAA.Colors.cream)
                 Spacer()
             }
             .ignoresSafeArea(edges: .top)
-            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -606,5 +701,29 @@ struct PhotoDetailSheet: View {
                 }
             }
         }
+    }
+
+    private var placeholderMedia: some View {
+        ZStack {
+            photo.accentColor.opacity(0.12)
+            Image(systemName: photo.imageName)
+                .font(.system(size: 80, weight: .light))
+                .foregroundColor(photo.accentColor.opacity(0.6))
+        }
+    }
+
+    private var attributionBox: some View {
+        HStack(spacing: 10) {
+            Image(systemName: photo.isVideo ? "video.fill" : "photo.fill")
+                .font(.system(size: 14))
+                .foregroundColor(HAA.Colors.orange)
+            Text("\(photo.uploadedBy) added this \(photo.isVideo ? "video" : "image")")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundColor(HAA.Colors.charcoal)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(HAA.Colors.orangeLight.opacity(0.6))
+        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
     }
 }

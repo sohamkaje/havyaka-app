@@ -28,18 +28,6 @@ struct HAANavBar: View {
             }
 
             Spacer()
-
-            Button {
-            } label: {
-                Image(systemName: "bell.fill")
-                    .font(.system(size: 16))
-                    .foregroundColor(HAA.Colors.mutedLight)
-                    .frame(width: 34, height: 34)
-                    .overlay(
-                        Circle()
-                            .stroke(HAA.Colors.gold.opacity(0.25), lineWidth: 1)
-                    )
-            }
         }
         .padding(.horizontal, HAA.Spacing.lg)
         .padding(.vertical, 12)
