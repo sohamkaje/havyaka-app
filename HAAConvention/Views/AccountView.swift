@@ -1,25 +1,9 @@
 import SwiftUI
 
-// MARK: - Account View
-struct AccountView: View {
-    @EnvironmentObject var auth: AuthViewModel
-
-    var body: some View {
-        VStack(spacing: 0) {
-            HAANavBar(title: "My Account", subtitle: "Registration & profile")
-
-            if auth.isLoggedIn {
-                ProfileView(auth: auth)
-            } else {
-                AccessView(auth: auth)
-            }
-        }
-    }
-}
-
 // MARK: - Access View
 struct AccessView: View {
     @ObservedObject var auth: AuthViewModel
+    @EnvironmentObject var network: NetworkMonitor
     @State private var screen: AuthScreen = .welcome
     @State private var email = ""
     @State private var loginCode = ""
@@ -140,7 +124,6 @@ struct AccessView: View {
                 codeField
                 infoBanner
                 errorBanner
-                rawServerResponseBanner
 
                 Button {
                     focusedField = nil
@@ -154,10 +137,9 @@ struct AccessView: View {
                     )
                 }
                 .buttonStyle(.plain)
-                .disabled(auth.isLoading || auth.isSendingCode)
+                .disabled(auth.isLoading || auth.isSendingCode || !network.isConnected)
             } else {
                 errorBanner
-                rawServerResponseBanner
 
                 Button {
                     focusedField = nil
@@ -171,7 +153,7 @@ struct AccessView: View {
                     )
                 }
                 .buttonStyle(.plain)
-                .disabled(auth.isSendingCode)
+                .disabled(auth.isSendingCode || !network.isConnected)
             }
 
             signUpHelp
@@ -203,7 +185,7 @@ struct AccessView: View {
                 )
             }
             .buttonStyle(.plain)
-            .disabled(auth.isLoading)
+            .disabled(auth.isLoading || !network.isConnected)
 
             logInHelp
         }
@@ -261,26 +243,6 @@ struct AccessView: View {
     }
 
     @ViewBuilder
-    private var rawServerResponseBanner: some View {
-        if let raw = auth.rawServerResponse {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("SERVER RESPONSE")
-                    .font(.system(size: 9, weight: .bold, design: .rounded))
-                    .tracking(0.8)
-                    .foregroundColor(HAA.Colors.muted)
-                Text(raw)
-                    .font(.system(size: 11, design: .monospaced))
-                    .foregroundColor(HAA.Colors.charcoal)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .textSelection(.enabled)
-            }
-            .padding(12)
-            .background(Color(hex: "#F0EDE6"))
-            .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-        }
-    }
-
-    @ViewBuilder
     private var errorBanner: some View {
         if let err = auth.errorMessage {
             banner(text: err, icon: "exclamationmark.triangle.fill", color: .red, bg: Color.red.opacity(0.07))
@@ -314,7 +276,6 @@ struct AccessView: View {
         signUpCodeSent = false
         auth.errorMessage = nil
         auth.infoMessage = nil
-        auth.rawServerResponse = nil
         focusedField = nil
     }
 
@@ -444,6 +405,7 @@ struct AccessView: View {
 // MARK: - Profile View
 struct ProfileView: View {
     @ObservedObject var auth: AuthViewModel
+    @EnvironmentObject var network: NetworkMonitor
     @State private var showLogoutConfirm = false
 
     var body: some View {
@@ -584,7 +546,7 @@ struct ProfileView: View {
             .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
         }
         .buttonStyle(.plain)
-        .disabled(auth.isCheckingIn)
+        .disabled(auth.isCheckingIn || !network.isConnected)
     }
 
     private var helpCard: some View {

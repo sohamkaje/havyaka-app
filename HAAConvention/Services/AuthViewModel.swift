@@ -9,7 +9,6 @@ class AuthViewModel: ObservableObject {
     @Published var isCheckingIn = false
     @Published var errorMessage: String?
     @Published var infoMessage: String?
-    @Published var rawServerResponse: String?
 
     private let profileKey = "haa_attendee_profile"
 
@@ -44,16 +43,11 @@ class AuthViewModel: ObservableObject {
         isSendingCode = true
         errorMessage = nil
         infoMessage = nil
-        rawServerResponse = nil
 
         Task {
-            let response = await RegistrationAPI.sendLoginCode(email: trimmed)
-            rawServerResponse = response.raw.displayText
-
-            switch response.result {
-            case .success(let message):
-                infoMessage = message
-            case .failure(let error):
+            do {
+                infoMessage = try await RegistrationAPI.sendLoginCode(email: trimmed)
+            } catch {
                 errorMessage = error.localizedDescription
             }
             isSendingCode = false

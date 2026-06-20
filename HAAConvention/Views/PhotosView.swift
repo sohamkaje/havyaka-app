@@ -5,7 +5,9 @@ import UniformTypeIdentifiers
 // MARK: - Photos View
 struct PhotosView: View {
     @EnvironmentObject var auth: AuthViewModel
+    @EnvironmentObject var network: NetworkMonitor
     @Binding var selectedTab: Int
+    @Binding var openAccountSection: Bool
 
     @State private var selectedDayFilter: String = "All"
     @State private var selectedEventFilter: PhotoEventTag? = nil
@@ -35,14 +37,20 @@ struct PhotosView: View {
         VStack(spacing: 0) {
             HAANavBar(title: "Photos", subtitle: "Convention memories")
 
+            if !network.isConnected {
+                OfflineBanner(
+                    message: "No internet connection. The photo gallery requires service to view and upload."
+                )
+            }
+
             if auth.isLoggedIn {
                 galleryContent
             } else {
-                PhotosLoginGate(selectedTab: $selectedTab)
+                PhotosLoginGate(selectedTab: $selectedTab, openAccountSection: $openAccountSection)
             }
         }
         .task(id: auth.isLoggedIn) {
-            guard auth.isLoggedIn else { return }
+            guard auth.isLoggedIn, network.isConnected else { return }
             await loadGallery()
         }
     }
@@ -100,7 +108,10 @@ struct PhotosView: View {
     }
 
     var uploadBanner: some View {
-        Button { showUploadSheet = true } label: {
+        Button {
+            guard network.isConnected else { return }
+            showUploadSheet = true
+        } label: {
             HStack(spacing: 12) {
                 ZStack {
                     Circle()
@@ -132,6 +143,8 @@ struct PhotosView: View {
             )
         }
         .buttonStyle(.plain)
+        .disabled(!network.isConnected)
+        .opacity(network.isConnected ? 1 : 0.5)
     }
 
     var dayFilterRow: some View {
@@ -261,6 +274,7 @@ struct PhotosView: View {
 // MARK: - Login Gate
 struct PhotosLoginGate: View {
     @Binding var selectedTab: Int
+    @Binding var openAccountSection: Bool
 
     var body: some View {
         VStack(spacing: 24) {
@@ -277,7 +291,8 @@ struct PhotosLoginGate: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             Button {
-                withAnimation { selectedTab = 5 }
+                openAccountSection = true
+                withAnimation { selectedTab = 4 }
             } label: {
                 Text("Go to Account")
                     .font(.system(size: 15, weight: .bold, design: .rounded))

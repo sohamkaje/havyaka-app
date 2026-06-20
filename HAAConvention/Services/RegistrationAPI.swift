@@ -3,7 +3,7 @@ import Foundation
 enum RegistrationAPIError: LocalizedError {
     case invalidURL
     case invalidResponse
-    case decodeFailed(String)
+    case decodeFailed
     case server(String)
 
     var errorDescription: String? {
@@ -12,8 +12,8 @@ enum RegistrationAPIError: LocalizedError {
             return "Invalid API URL."
         case .invalidResponse:
             return "Unexpected server response."
-        case .decodeFailed(let detail):
-            return "Could not read server response: \(detail)"
+        case .decodeFailed:
+            return "Could not read server response. Please try again."
         case .server(let message):
             return message
         }
@@ -23,35 +23,23 @@ enum RegistrationAPIError: LocalizedError {
 struct APIRawResponse {
     let statusCode: Int
     let body: String
-
-    var displayText: String {
-        let bodyDisplay = body.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            ? "(empty body)"
-            : body
-        return "HTTP \(statusCode)\n\(bodyDisplay)"
-    }
 }
 
 struct RegistrationAPI {
     static let baseURL = "https://havyak.org/api/auth.php"
     static let apiKey = ""
 
-    static func sendLoginCode(email: String) async -> (raw: APIRawResponse, result: Result<String, Error>) {
+    static func sendLoginCode(email: String) async throws -> String {
         let raw = await postRaw(body: [
             "action": "sendcode",
             "email": email,
         ])
 
-        do {
-            let decoded = try decode(MessageEnvelope.self, from: raw)
-            guard raw.statusCode == 200, decoded.success else {
-                let message = decoded.error ?? decoded.message ?? "Could not send login code."
-                return (raw, .failure(RegistrationAPIError.server(message)))
-            }
-            return (raw, .success(decoded.message ?? "Login code sent to your email."))
-        } catch {
-            return (raw, .failure(error))
+        let decoded = try decode(MessageEnvelope.self, from: raw)
+        guard raw.statusCode == 200, decoded.success else {
+            throw RegistrationAPIError.server(decoded.error ?? decoded.message ?? "Could not send login code.")
         }
+        return decoded.message ?? "Login code sent to your email."
     }
 
     static func login(email: String, code: String) async throws -> AttendeeProfile {
@@ -119,14 +107,14 @@ struct RegistrationAPI {
     }
 
     private static func decode<T: Decodable>(_ type: T.Type, from raw: APIRawResponse) throws -> T {
-        guard let data = raw.body.data(using: .utf8) else {
-            throw RegistrationAPIError.decodeFailed(raw.displayText)
+        guard let data = raw.body.data(using: .utf8), !data.isEmpty else {
+            throw RegistrationAPIError.decodeFailed
         }
 
         do {
             return try JSONDecoder().decode(T.self, from: data)
         } catch {
-            throw RegistrationAPIError.decodeFailed(raw.displayText)
+            throw RegistrationAPIError.decodeFailed
         }
     }
 }

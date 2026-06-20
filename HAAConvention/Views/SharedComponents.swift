@@ -1,5 +1,31 @@
 import SwiftUI
 
+// MARK: - Offline Banner
+struct OfflineBanner: View {
+    var message: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "wifi.slash")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(HAA.Colors.orange)
+            Text(message)
+                .font(.system(size: 12, design: .rounded))
+                .foregroundColor(HAA.Colors.charcoal)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(HAA.Colors.orangeLight)
+        .overlay(
+            Rectangle()
+                .fill(HAA.Colors.orange.opacity(0.2))
+                .frame(height: 0.5),
+            alignment: .bottom
+        )
+    }
+}
+
 // MARK: - Top Navigation Bar
 struct HAANavBar: View {
     let title: String

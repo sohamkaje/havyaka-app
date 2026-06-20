@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var auth: AuthViewModel
     @State private var selectedTab: Int = 0
+    @State private var openAccountSection = false
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -10,9 +11,8 @@ struct ContentView: View {
                 HomeView()     .tag(0)
                 ScheduleView() .tag(1)
                 MapView()      .tag(2)
-                PhotosView(selectedTab: $selectedTab)   .tag(3)
-                InfoView()     .tag(4)
-                AccountView()  .tag(5)
+                PhotosView(selectedTab: $selectedTab, openAccountSection: $openAccountSection)   .tag(3)
+                InfoAccountView(openAccountSection: $openAccountSection)     .tag(4)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea(edges: .bottom)
@@ -32,8 +32,7 @@ struct HAATabBar: View {
         ("calendar",             "Schedule"),
         ("map.fill",             "Map"),
         ("photo.fill",           "Photos"),
-        ("info.circle.fill",     "Info"),
-        ("person.crop.circle",   "Account"),
+        ("ellipsis.circle.fill", "More"),
     ]
 
     var body: some View {

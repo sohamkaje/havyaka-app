@@ -1,13 +1,100 @@
 import SwiftUI
 
-struct InfoView: View {
-    @State private var expandedCard: String? = "venue"
+enum InfoAccountSection: String, CaseIterable {
+    case info = "Info"
+    case account = "Account"
+}
+
+struct InfoAccountView: View {
+    @EnvironmentObject var auth: AuthViewModel
+    @EnvironmentObject var network: NetworkMonitor
+    @Binding var openAccountSection: Bool
+    @State private var section: InfoAccountSection = .info
 
     var body: some View {
         VStack(spacing: 0) {
-            HAANavBar(title: "Convention Info", subtitle: "Everything you need to know")
+            HAANavBar(
+                title: section == .info ? "Convention Info" : "My Account",
+                subtitle: section == .info ? "Everything you need to know" : "Registration & profile"
+            )
 
-            ScrollView(showsIndicators: false) {
+            sectionPicker
+
+            if section == .account, !network.isConnected {
+                OfflineBanner(
+                    message: "No internet connection. Sign in, sign up, and check-in require service."
+                )
+            }
+
+            switch section {
+            case .info:
+                InfoTabContent()
+            case .account:
+                if auth.isLoggedIn {
+                    ProfileView(auth: auth)
+                } else {
+                    AccessView(auth: auth)
+                }
+            }
+        }
+        .onChange(of: openAccountSection) { _, shouldOpen in
+            guard shouldOpen else { return }
+            section = .account
+            openAccountSection = false
+        }
+        .onAppear {
+            guard openAccountSection else { return }
+            section = .account
+            openAccountSection = false
+        }
+    }
+
+    private var sectionPicker: some View {
+        HStack(spacing: 0) {
+            ForEach(InfoAccountSection.allCases, id: \.self) { item in
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        section = item
+                    }
+                } label: {
+                    Text(item.rawValue)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .foregroundColor(section == item ? .white : HAA.Colors.muted)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            section == item
+                                ? AnyShapeStyle(HAA.Colors.orange)
+                                : AnyShapeStyle(Color.clear)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+        .overlay(
+            RoundedRectangle(cornerRadius: HAA.Radius.md)
+                .stroke(HAA.Colors.border, lineWidth: 0.5)
+        )
+        .padding(.horizontal, HAA.Spacing.lg)
+        .padding(.vertical, 12)
+        .background(Color.white)
+        .overlay(
+            Rectangle()
+                .fill(HAA.Colors.border)
+                .frame(height: 0.5),
+            alignment: .bottom
+        )
+    }
+}
+
+struct InfoTabContent: View {
+    @State private var expandedCard: String? = "venue"
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     quickContactBar
 
@@ -69,7 +156,6 @@ struct InfoView: View {
                 }
             }
             .background(HAA.Colors.cream)
-        }
     }
 
     // MARK: - Quick Contact Bar
