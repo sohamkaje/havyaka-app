@@ -90,7 +90,14 @@ struct PhotosView: View {
             }
         }
         .sheet(item: $selectedPhoto) { photo in
-            PhotoDetailSheet(photo: photo)
+            PhotoDetailSheet(
+                photo: photo,
+                currentUserEmail: auth.profile.email
+            ) { deletedId in
+                withAnimation {
+                    photos.removeAll { $0.id == deletedId }
+                }
+            }
         }
     }
 
@@ -98,11 +105,9 @@ struct PhotosView: View {
         isLoadingGallery = true
         galleryError = nil
         do {
-            let remote = try await PhotosAPI.fetchGallery()
-            photos = remote.isEmpty ? ConventionData.photos : remote
+            photos = try await PhotosAPI.fetchGallery()
         } catch {
             galleryError = error.localizedDescription
-            if photos.isEmpty { photos = ConventionData.photos }
         }
         isLoadingGallery = false
     }
@@ -250,12 +255,18 @@ struct PhotosView: View {
         .background(HAA.Colors.cream)
     }
 
+    var emptyStateMessage: String {
+        if let galleryError { return galleryError }
+        if photos.isEmpty { return "No photos yet. Be the first to share a convention memory!" }
+        return "No photos match this filter"
+    }
+
     var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "photo.on.rectangle.angled")
                 .font(.system(size: 40))
                 .foregroundColor(HAA.Colors.muted.opacity(0.4))
-            Text(galleryError ?? "No photos match this filter")
+            Text(emptyStateMessage)
                 .font(.system(size: 14, design: .rounded))
                 .foregroundColor(HAA.Colors.muted)
                 .multilineTextAlignment(.center)
@@ -354,23 +365,6 @@ struct PhotoTile: View {
                         }
                         Spacer()
                     }
-                }
-
-                VStack {
-                    Spacer()
-                    Text(photo.caption)
-                        .font(.system(size: 8, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 3)
-                        .frame(maxWidth: .infinity)
-                        .background(
-                            LinearGradient(
-                                colors: [Color.clear, Color.black.opacity(0.55)],
-                                startPoint: .top, endPoint: .bottom
-                            )
-                        )
                 }
             }
         }
@@ -655,7 +649,19 @@ struct UploadPhotoSheet: View {
 // MARK: - Photo Detail Sheet
 struct PhotoDetailSheet: View {
     let photo: ConventionPhoto
+    let currentUserEmail: String
+    let onDelete: (String) -> Void
+
     @Environment(\.dismiss) var dismiss
+    @State private var showDeleteConfirm = false
+    @State private var isDeleting = false
+    @State private var deleteError: String?
+
+    private var canDelete: Bool {
+        let owner = photo.uploaderEmail.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let current = currentUserEmail.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return !owner.isEmpty && owner == current
+    }
 
     var body: some View {
         NavigationView {
@@ -701,6 +707,36 @@ struct PhotoDetailSheet: View {
                             .font(.system(size: 12, design: .rounded))
                             .foregroundColor(HAA.Colors.muted)
                     }
+
+                    if let deleteError {
+                        Text(deleteError)
+                            .font(.system(size: 13, design: .rounded))
+                            .foregroundColor(.red)
+                    }
+
+                    if canDelete {
+                        Button(role: .destructive) {
+                            showDeleteConfirm = true
+                        } label: {
+                            HStack(spacing: 8) {
+                                if isDeleting {
+                                    ProgressView().tint(.red).scaleEffect(0.85)
+                                } else {
+                                    Image(systemName: "trash.fill")
+                                        .font(.system(size: 14))
+                                }
+                                Text(isDeleting ? "Deleting…" : "Delete \(photo.isVideo ? "Video" : "Photo")")
+                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                            }
+                            .foregroundColor(.red)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(Color.red.opacity(0.08))
+                            .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(isDeleting)
+                    }
                 }
                 .padding(HAA.Spacing.lg)
                 .background(HAA.Colors.cream)
@@ -714,6 +750,35 @@ struct PhotoDetailSheet: View {
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(HAA.Colors.orange)
                 }
+            }
+            .confirmationDialog(
+                "Delete this \(photo.isVideo ? "video" : "photo")?",
+                isPresented: $showDeleteConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) { deletePhoto() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This cannot be undone. It will be removed from the shared gallery.")
+            }
+        }
+    }
+
+    private func deletePhoto() {
+        isDeleting = true
+        deleteError = nil
+
+        Task {
+            do {
+                try await PhotosAPI.delete(
+                    photoId: photo.id,
+                    uploaderEmail: currentUserEmail
+                )
+                onDelete(photo.id)
+                dismiss()
+            } catch {
+                deleteError = error.localizedDescription
+                isDeleting = false
             }
         }
     }

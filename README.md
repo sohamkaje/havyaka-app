@@ -42,12 +42,15 @@ Auth is handled by `api/auth.php` against the existing MySQL registration table 
 
 ### Photo gallery
 
-The shared gallery is backed by `api/photos.php`:
+The shared gallery is backed by `api/photos.php` + **Cloudflare R2**:
 
-- **List** — loads photo/video metadata from MySQL and serves files from disk on the server
-- **Upload** — logged-in attendees can upload images and videos (up to 45 MB) with caption, day, and event tag
+- **List** — loads photo/video metadata from MySQL on Bluehost
+- **Upload** — files go to Cloudflare R2; only the public URL is stored in MySQL
+- **Limits** — 10 photos and 2 videos per logged-in user; 45 MB max per file
 
 If the API is unreachable, the Photos tab shows an offline banner and falls back to demo content where configured.
+
+**Setup:** See [`api/migrations/PHOTOS_R2_SETUP.md`](api/migrations/PHOTOS_R2_SETUP.md) for Cloudflare R2 configuration steps.
 
 ### Offline behavior
 
@@ -81,9 +84,10 @@ havyaka-app/
 │
 ├── api/                            # PHP backend (deploy to Bluehost manually)
 │   ├── auth.php                    # sendcode, login, checkin
-│   ├── photos.php                  # list, upload
-│   ├── config.php / db.php         # DB credentials (gitignored)
-│   └── migrations/                 # SQL for appPW, photos table
+│   ├── photos.php                  # list, upload (→ Cloudflare R2)
+│   ├── r2_storage.php              # R2 S3-compatible upload helper
+│   ├── config.php / db.php         # DB + R2 credentials (gitignored)
+│   └── migrations/                 # SQL + PHOTOS_R2_SETUP.md
 │
 └── HAAConvention.xcodeproj
 ```
@@ -97,9 +101,9 @@ Convention-specific content (schedule days, map pins, FAQ text, etc.) lives in `
 The app calls:
 
 - `https://havyak.org/api/auth.php` — registration login and check-in
-- `https://havyak.org/api/photos.php` — photo gallery
+- `https://havyak.org/api/photos.php` — photo gallery (files on Cloudflare R2)
 
-PHP files and `.env` credentials are **gitignored** and deployed to Bluehost separately. SQL migrations in `api/migrations/` must be run on the MySQL database, and uploaded media goes in `public_html/uploads/haa2026/` (writable by the web server).
+PHP files and `.env` credentials are **gitignored** and deployed to Bluehost separately. SQL migrations in `api/migrations/` must be run on the MySQL database. Photo/video files are stored on **Cloudflare R2**, not Bluehost disk — see [`api/migrations/PHOTOS_R2_SETUP.md`](api/migrations/PHOTOS_R2_SETUP.md).
 
 ---
 

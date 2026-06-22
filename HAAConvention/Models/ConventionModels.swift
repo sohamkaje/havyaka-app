@@ -172,6 +172,7 @@ struct ConventionPhoto: Identifiable {
     let imageName: String
     let caption: String
     let uploadedBy: String
+    let uploaderEmail: String
     let day: String
     let eventTag: PhotoEventTag
     let mediaType: PhotoMediaType
@@ -183,6 +184,7 @@ struct ConventionPhoto: Identifiable {
         imageName: String = "photo.fill",
         caption: String,
         uploadedBy: String,
+        uploaderEmail: String = "",
         day: String,
         eventTag: PhotoEventTag,
         mediaType: PhotoMediaType = .image,
@@ -193,6 +195,7 @@ struct ConventionPhoto: Identifiable {
         self.imageName = imageName
         self.caption = caption
         self.uploadedBy = uploadedBy
+        self.uploaderEmail = uploaderEmail
         self.day = day
         self.eventTag = eventTag
         self.mediaType = mediaType
@@ -462,20 +465,5 @@ struct ConventionData {
             icon: "sportscourt.fill",
             distanceNote: "Thu Jul 2 · 2:00 PM"
         ),
-    ]
-
-    // MARK: Photos (placeholder — replace imageName with real asset names / URLs)
-    static let photos: [ConventionPhoto] = [
-        ConventionPhoto(imageName: "flag.fill",        caption: "Opening parade",          uploadedBy: "DC Chapter",         day: "July 3", eventTag: .openingCeremony,  accentColor: HAA.Colors.orange),
-        ConventionPhoto(imageName: "music.mic",        caption: "Anuradha Bhat concert",   uploadedBy: "NY Chapter",         day: "July 3", eventTag: .concert,          accentColor: HAA.Colors.orange),
-        ConventionPhoto(imageName: "person.3.fill",    caption: "Social hour gathering",   uploadedBy: "Dallas Chapter",     day: "July 3", eventTag: .socialHour,       accentColor: Color(hex: "#1D9E75")),
-        ConventionPhoto(imageName: "book.fill",        caption: "Havyasiri release",       uploadedBy: "Atlanta Chapter",    day: "July 3", eventTag: .openingCeremony,  accentColor: HAA.Colors.gold),
-        ConventionPhoto(imageName: "theatermasks.fill",caption: "Yakshagana performance",  uploadedBy: "NorCal Chapter",     day: "July 4", eventTag: .yakshagana,       accentColor: HAA.Colors.gold),
-        ConventionPhoto(imageName: "figure.dance",     caption: "Youth dance performance", uploadedBy: "SoCal Chapter",      day: "July 4", eventTag: .culturalPrograms, accentColor: HAA.Colors.gold),
-        ConventionPhoto(imageName: "music.note.list",  caption: "Youth Symphony",          uploadedBy: "Chicago Chapter",    day: "July 4", eventTag: .youthSymphony,    accentColor: HAA.Colors.gold),
-        ConventionPhoto(imageName: "star.fill",        caption: "Awards ceremony",         uploadedBy: "New England Chapter",day: "July 4", eventTag: .openingCeremony,  accentColor: HAA.Colors.orange),
-        ConventionPhoto(imageName: "fork.knife",       caption: "Traditional feast",       uploadedBy: "Houston Chapter",    day: "July 3", eventTag: .meals,            accentColor: Color(hex: "#1D9E75")),
-        ConventionPhoto(imageName: "person.2.fill",    caption: "General Body Meeting",    uploadedBy: "HAA Board",          day: "July 5", eventTag: .general,          accentColor: HAA.Colors.muted),
-        ConventionPhoto(imageName: "sportscourt.fill", caption: "Pickleball tournament",   uploadedBy: "Youth Committee",    day: "July 2", eventTag: .youthEvents,      accentColor: Color(hex: "#166E3F")),
     ]
 }

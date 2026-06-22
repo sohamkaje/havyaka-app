@@ -88,6 +88,18 @@ struct PhotosAPI {
         return photo.toConventionPhoto()
     }
 
+    static func delete(photoId: String, uploaderEmail: String) async throws {
+        let envelope: ActionEnvelope = try await postJSON(body: [
+            "action": "delete",
+            "id": photoId,
+            "uploaderEmail": uploaderEmail,
+        ])
+
+        guard envelope.success else {
+            throw PhotosAPIError.server(envelope.error ?? "Could not delete photo.")
+        }
+    }
+
     private static func postJSON<T: Decodable>(body: [String: String]) async throws -> T {
         guard let url = URL(string: baseURL) else {
             throw PhotosAPIError.invalidURL
@@ -119,11 +131,18 @@ private struct UploadEnvelope: Decodable {
     let photo: APIPhoto?
 }
 
+private struct ActionEnvelope: Decodable {
+    let success: Bool
+    let error: String?
+    let message: String?
+}
+
 private struct APIPhoto: Decodable {
     let id: String
     let mediaURL: String?
     let caption: String
     let uploadedBy: String
+    let uploaderEmail: String?
     let day: String
     let eventTag: String
     let mediaType: String
@@ -135,6 +154,7 @@ private struct APIPhoto: Decodable {
             imageName: mediaType == PhotoMediaType.video.rawValue ? "play.rectangle.fill" : "photo.fill",
             caption: caption,
             uploadedBy: uploadedBy,
+            uploaderEmail: uploaderEmail ?? "",
             day: day,
             eventTag: PhotoEventTag(rawValue: eventTag) ?? .general,
             mediaType: PhotoMediaType(rawValue: mediaType) ?? .image
