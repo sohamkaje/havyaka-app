@@ -65,7 +65,30 @@ struct ScheduleEvent: Identifiable {
     let tag: EventTag
     let details: String
     let icon: String
+    var chapter: String? = nil
+    var venue: String = "Main Auditorium"
     var isHighlight: Bool = false
+
+    /// Full street address for the event detail sheet.
+    var locationAddress: String {
+        switch venue {
+        case "Play N Thrive Club", "Play N Thrive Club, Naperville":
+            return "808 S Route 59, Ste 120, Naperville, IL 60540"
+        case "Chicago":
+            return "Chicago, IL"
+        default:
+            return "Rosary College Prep · 901 N Edgelawn Dr, Aurora, IL 60506"
+        }
+    }
+
+    var isOffSite: Bool {
+        switch venue {
+        case "Play N Thrive Club", "Play N Thrive Club, Naperville", "Chicago":
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 struct ConventionDay: Identifiable {
@@ -84,6 +107,7 @@ enum LocationCategory: String, CaseIterable {
     case all      = "All"
     case venue    = "Venue"
     case hotels   = "Hotels"
+    case nearby   = "Nearby"
     case food     = "Food & Grocery"
     case sports   = "Sports & Activities"
 
@@ -92,6 +116,7 @@ enum LocationCategory: String, CaseIterable {
         case .all:    return "map.fill"
         case .venue:  return "building.columns.fill"
         case .hotels: return "bed.double.fill"
+        case .nearby: return "star.circle.fill"
         case .food:   return "leaf.fill"
         case .sports: return "sportscourt.fill"
         }
@@ -113,8 +138,6 @@ struct ConventionLocation: Identifiable {
 
 // MARK: - Photo Models
 
-// MARK: - Photo Models
-
 enum PhotoMediaType: String, Codable {
     case image
     case video
@@ -127,10 +150,103 @@ enum PhotosLimits {
     static func validateFileSize(_ byteCount: Int64) -> String? {
         guard byteCount > 0 else { return "Could not read the selected file." }
         guard byteCount <= maxUploadBytes else {
-            return "File is too large. Maximum size is \(maxUploadMB) MB."
+            let fileMB = Double(byteCount) / (1024 * 1024)
+            return "This file is \(String(format: "%.1f", fileMB)) MB. The maximum allowed size is \(maxUploadMB) MB. Please choose a smaller photo or video."
         }
         return nil
     }
+
+    static func formattedSize(_ byteCount: Int64) -> String {
+        let mb = Double(byteCount) / (1024 * 1024)
+        return mb >= 0.1 ? String(format: "%.1f MB", mb) : String(format: "%.0f KB", Double(byteCount) / 1024)
+    }
+}
+
+// MARK: - Star Attractions
+
+struct StarAttraction: Identifiable {
+    let id: String
+    let icon: String
+    let title: String
+    let subtitle: String
+    let description: String
+    let kannada: String?
+    let iconColor: Color
+
+    static let highlights: [StarAttraction] = [
+        StarAttraction(
+            id: "opening",
+            icon: "flag.fill",
+            title: "Grand Opening Ceremony",
+            subtitle: "Opening procession & formal ceremony",
+            description: "The official start of the 21st Biennial Convention with a festive procession, invocation dance, Veda Ghosha, addresses by HAA leadership and chief guest Vishweshwar Bhat, the HAA 10-year vision, sponsor recognition, and the convention theme song.",
+            kannada: "ಉತ್ಸವ ಮೆರವಣಿಗೆ ಮತ್ತು ಉದ್ಘಾಟನಾ ಸಮಾರಂಭ",
+            iconColor: HAA.Colors.orange
+        ),
+        StarAttraction(
+            id: "anuradha",
+            icon: "music.mic",
+            title: "Anuradha Bhat & Team — Live",
+            subtitle: "Celebrated playback singer from India",
+            description: "A special musical night featuring celebrated playback singer Anuradha Bhat and accompanying artists from India — an evening of live Kannada film and classical favorites.",
+            kannada: "ಅನುರಾಧಾ ಭಟ್ ಮತ್ತು ತಂಡದ ಸಂಗೀತ ರಾತ್ರಿ",
+            iconColor: HAA.Colors.orange
+        ),
+        StarAttraction(
+            id: "swami",
+            icon: "hands.sparkles.fill",
+            title: "Swami Aparajitananda",
+            subtitle: "Intelligent Living & satsang",
+            description: "Intelligent Living by Swami Aparajitananda on Saturday morning, followed by a breakout-room satsang and Q&A session for deeper reflection and community questions.",
+            kannada: "ಸ್ವಾಮಿ ಅಪರಾಜಿತಾನಂದರ ಆಧ್ಯಾತ್ಮಿಕ ಪ್ರವಚನ",
+            iconColor: HAA.Colors.gold
+        ),
+        StarAttraction(
+            id: "maya-leela",
+            icon: "figure.dance",
+            title: "Maya Leela — Youth Dance Production",
+            subtitle: "Dance drama by all chapter youth",
+            description: "A grand dance drama production bringing together youth from HAA chapters across North America — a highlight of Friday evening's cultural program in the Main Auditorium.",
+            kannada: "ಮಾಯಾ ಲೀಲಾ — ಯುವ ನೃತ್ಯ ನಿರೂಪಣೆ",
+            iconColor: HAA.Colors.orange
+        ),
+        StarAttraction(
+            id: "hima-maya",
+            icon: "theatermasks.fill",
+            title: "Hima Maya — Dance Production",
+            subtitle: "Acharya Performing Arts Academy",
+            description: "A dance drama production by Acharya Performing Arts Academy, presenting the Frozen story in Bharatanatyam dance drama style — one of Saturday morning's standout cultural performances.",
+            kannada: "ಹಿಮ ಮಾಯಾ — ನೃತ್ಯ ನಿರೂಪಣೆ",
+            iconColor: HAA.Colors.gold
+        ),
+        StarAttraction(
+            id: "youth-symphony",
+            icon: "music.note.list",
+            title: "Youth Symphony",
+            subtitle: "All-chapter youth musical presentation",
+            description: "A special musical presentation bringing together talented youth from HAA chapters across North America — a showcase of the next generation of Havyaka artists.",
+            kannada: "ಯುವ ಸಿಮ್ಫನಿ",
+            iconColor: HAA.Colors.gold
+        ),
+        StarAttraction(
+            id: "jugalbandi",
+            icon: "music.quarternote.3",
+            title: "Jugalbandi of Music",
+            subtitle: "Vinayak Hegde & team",
+            description: "A musical jugalbandi featuring Vinayak Hegde and team — an evening of collaborative classical performance and virtuoso interplay in the Main Auditorium.",
+            kannada: "ಸಂಗೀತ ಜುಗಲ್ಬಂದಿ",
+            iconColor: HAA.Colors.orange
+        ),
+        StarAttraction(
+            id: "yakshagana",
+            icon: "theatermasks.fill",
+            title: "Yakshagana — Veeramani Kalaga",
+            subtitle: "Led by Yakshamitra Toronto & US artists",
+            description: "A grand Yakshagana performance of \"Veeramani Kalaga\" led by Yakshamitra Toronto and US artists — one of the convention's most anticipated cultural evenings.",
+            kannada: "ಯಕ್ಷಗಾನ \"ವೀರಮಣಿ ಕಲಾಗ\"",
+            iconColor: HAA.Colors.gold
+        ),
+    ]
 }
 
 /// Event tags that can be applied to individual photos
@@ -308,103 +424,37 @@ struct AttendeeProfile: Identifiable, Codable {
 struct ConventionData {
 
     // MARK: Schedule
+    static let scheduleTitle = "HAA 21st Biennial Convention Schedule"
+    static let scheduleSubtitle = "Chicago • July 2–5, 2026"
+    static let scheduleTagline = "ನಮ್ಮ ಜನ · ನಮ್ಮತನ · ನಮ್ಮ ಧನ · ನಮ್ಮ ಋಣ"
+
     static let days: [ConventionDay] = [
         ConventionDay(
             shortDay: "Thu", fullDate: "Thursday, July 2", monthDay: "Jul 2", calendarDay: 2,
-            events: [
-                ScheduleEvent(time: "2:00 PM", title: "Youth Pickleball Tournament", kannada: nil, tag: .sports,
-                              details: "Kick off the convention early with the HAA Youth Committee's Pickleball Tournament at Play N Thrive Club (808 IL-59 N, Naperville). Open to all youth attendees. Brackets will be organized on-site. Prizes for top finishers.",
-                              icon: "sportscourt.fill", isHighlight: true),
-                ScheduleEvent(time: "6:30 PM", title: "Hotel Check-in & Welcome", kannada: "ಸ್ವಾಗತ", tag: .social,
-                              details: "Check into your hotel and get settled. Volunteers will be at the lobby to welcome attendees and hand out convention packets.",
-                              icon: "key.fill"),
-                ScheduleEvent(time: "8:00 PM", title: "Program Rehearsals", kannada: "ಕಾರ್ಯಕ್ರಮಗಳ ಪೂರ್ವಾಭ್ಯಾಸ", tag: .cultural,
-                              details: "Cultural program participants gather at the main hall for final rehearsals. All chapter performance teams are requested to be present.",
-                              icon: "theatermasks.fill"),
-                ScheduleEvent(time: "9:00 PM", title: "Light Dinner", kannada: "ಲಘು ಭೋಜನ", tag: .meal,
-                              details: "Light vegetarian dinner for early arrivals. Menu includes South Indian snacks and refreshments.",
-                              icon: "fork.knife"),
-            ]
+            events: thursdayEvents
         ),
         ConventionDay(
             shortDay: "Fri", fullDate: "Friday, July 3", monthDay: "Jul 3", calendarDay: 3,
-            events: [
-                ScheduleEvent(time: "7:30 AM", title: "Breakfast", kannada: "ಉಪಾಹಾರ", tag: .meal,
-                              details: "Vegetarian South Indian breakfast including idli, dosa, upma, sambar and chutney served at the main cafeteria.",
-                              icon: "sunrise.fill"),
-                ScheduleEvent(time: "11:00 AM", title: "Social Hour", kannada: "ಪರಿಚಯ, ಕುಶಲೋಪರಿ", tag: .social,
-                              details: "An open networking hour for attendees to reconnect with old friends and make new ones. Refreshments will be served.",
-                              icon: "person.3.fill"),
-                ScheduleEvent(time: "12:30 PM", title: "Lunch", kannada: "ಭೋಜನ", tag: .meal,
-                              details: "Full vegetarian lunch featuring traditional Havyaka cuisine — rice, sambar, rasam, palya, and payasam.",
-                              icon: "fork.knife"),
-                ScheduleEvent(time: "2:00 PM", title: "Grand Opening Parade & Ceremony", kannada: "ಭವ್ಯ ಮೆರವಣಿಗೆ · ಉದ್ಘಾಟನೆ", tag: .ceremony,
-                              details: "The convention officially opens with a grand parade of all 15 HAA chapters, followed by the opening ceremony with speeches by distinguished guests including Dr. Giridhara Kaje and Vishweshwar Bhat.",
-                              icon: "flag.fill", isHighlight: true),
-                ScheduleEvent(time: "3:30 PM", title: "Havyasiri Release", kannada: "ಹವ್ಯಸಿರಿ ಬಿಡುಗಡೆ", tag: .ceremony,
-                              details: "Launch of the Havyasiri publication — the HAA convention magazine featuring articles, essays, poetry, and community achievements from Havyaka members across the Americas.",
-                              icon: "book.fill"),
-                ScheduleEvent(time: "4:30 PM", title: "Chapter Cultural Programs", kannada: "ಸಾಂಸ್ಕೃತಿಕ ಕಾರ್ಯಕ್ರಮಗಳು", tag: .cultural,
-                              details: "All 15 HAA chapters present their unique cultural performances — classical dance, Carnatic music, skits, and folk arts. Competition winners will be recognized.",
-                              icon: "theatermasks.fill"),
-                ScheduleEvent(time: "7:30 PM", title: "Dinner", kannada: "ಭೋಜನ", tag: .meal,
-                              details: "Dinner is served. Traditional Havyaka feast with multiple courses.",
-                              icon: "moon.stars.fill"),
-                ScheduleEvent(time: "9:00 PM", title: "Anuradha Bhat — Musical Evening", kannada: "ಸಂಗೀತ ರಸಸಂಜೆ", tag: .concert,
-                              details: "A captivating musical evening with celebrated playback singer Anuradha Bhat. Known across the Kannada film industry, she will perform a mix of devotional and film songs.",
-                              icon: "music.mic", isHighlight: true),
-            ]
+            events: fridayEvents
         ),
         ConventionDay(
             shortDay: "Sat", fullDate: "Saturday, July 4", monthDay: "Jul 4", calendarDay: 4,
-            events: [
-                ScheduleEvent(time: "7:30 AM", title: "Breakfast", kannada: "ಉಪಾಹಾರ", tag: .meal,
-                              details: "Vegetarian breakfast served at the main cafeteria.",
-                              icon: "sunrise.fill"),
-                ScheduleEvent(time: "10:00 AM", title: "Dance Drama", kannada: "ನೃತ್ಯ ರೂಪಕ", tag: .cultural,
-                              details: "A full-length dance drama performance by well-known professional artists combining classical dance forms with Kannada storytelling.",
-                              icon: "figure.dance"),
-                ScheduleEvent(time: "12:30 PM", title: "Lunch", kannada: "ಭೋಜನ", tag: .meal,
-                              details: "Full vegetarian lunch served at the main cafeteria. Traditional Havyaka cuisine with rice, sambar, rasam, and payasam.",
-                              icon: "fork.knife"),
-                ScheduleEvent(time: "2:00 PM", title: "Youth Symphony", kannada: "ಯುವ ಸಂಗೀತ", tag: .concert,
-                              details: "Young Havyaka musicians from across North America showcase their talent in an inspiring Youth Symphony performance.",
-                              icon: "music.note.list", isHighlight: true),
-                ScheduleEvent(time: "4:30 PM", title: "Chapter Cultural Programs", kannada: "ಸಾಂಸ್ಕೃತಿಕ ಕಾರ್ಯಕ್ರಮಗಳು", tag: .cultural,
-                              details: "Continued chapter cultural performances. Open Dance Floor segment included for audience participation.",
-                              icon: "theatermasks.fill"),
-                ScheduleEvent(time: "5:30 PM", title: "Closing Ceremony", kannada: "ಸಮಾರೋಪ", tag: .ceremony,
-                              details: "The 21st Biennial Convention closing ceremony. Awards, recognitions, and announcement of the next convention location.",
-                              icon: "star.fill"),
-                ScheduleEvent(time: "7:30 PM", title: "Dinner", kannada: "ಭೋಜನ", tag: .meal,
-                              details: "Grand dinner before the Yakshagana performance.",
-                              icon: "fork.knife"),
-                ScheduleEvent(time: "9:00 PM", title: "Grand Yakshagana Performance", kannada: "ಅಮೋಘ ಯಕ್ಷಗಾನ ಪ್ರದರ್ಶನ", tag: .concert,
-                              details: "The crown jewel of HAA 2026 — a full Yakshagana performance featuring Tenku Badagu Koodata by Yakshadhurva Patla Foundation Trust artists alongside Havyaka artists from the Americas. This traditional Karnataka art form combines dance, music, costume, and mythology.",
-                              icon: "theatermasks.fill", isHighlight: true),
-            ]
+            events: saturdayEvents
         ),
         ConventionDay(
             shortDay: "Sun", fullDate: "Sunday, July 5", monthDay: "Jul 5", calendarDay: 5,
-            events: [
-                ScheduleEvent(time: "8:00 AM", title: "Breakfast", kannada: "ಉಪಾಹಾರ", tag: .meal,
-                              details: "Final morning breakfast at the convention.",
-                              icon: "sunrise.fill"),
-                ScheduleEvent(time: "9:30 AM", title: "HAA General Body Meeting", kannada: "ಸರ್ವ ಸದಸ್ಯ ಸಭೆ", tag: .meeting,
-                              details: "The HAA General Body Meeting open to all life and patron members. Agenda includes financial review, committee reports, election of new officers, and planning for the next biennial convention.",
-                              icon: "person.2.fill"),
-            ]
+            events: sundayEvents
         ),
     ]
 
     // MARK: Locations
     static let locations: [ConventionLocation] = [
         ConventionLocation(
-            name: "Rosary High School",
+            name: "Rosary College Prep",
             subtitle: "Convention Venue",
             address: "901 N Edgelawn Dr, Aurora, IL 60506",
             category: .venue,
-            coordinate: CLLocationCoordinate2D(latitude: 41.7839, longitude: -88.3243),
+            coordinate: CLLocationCoordinate2D(latitude: 41.7753925, longitude: -88.3573770),
             detail: "Home of the 21st Biennial HAA Convention. All cultural programs, ceremonies, and meals take place here. Ample parking is available on campus.",
             accentColor: HAA.Colors.orange,
             icon: "building.columns.fill",
@@ -413,57 +463,68 @@ struct ConventionData {
         ConventionLocation(
             name: "Hampton Inn & Suites",
             subtitle: "from $139/night",
-            address: "2423 W Orchard Rd, North Aurora, IL 60542",
+            address: "2423 Bushwood Dr, Aurora, IL 60506",
             category: .hotels,
-            coordinate: CLLocationCoordinate2D(latitude: 41.8060, longitude: -88.3350),
-            detail: "Negotiated HAA group rate: $139/night (excl. taxes). Free cancellation before July 1, 2026 at 11:59 PM CDT. Located ~2 miles from the venue. Use the HAA group code when booking.",
+            coordinate: CLLocationCoordinate2D(latitude: 41.7916938, longitude: -88.3765416),
+            detail: "Negotiated HAA group rate: $139/night (excl. taxes). Free cancellation before July 1, 2026 at 11:59 PM CDT. Located ~1.5 miles from the venue. Use the HAA group code when booking.",
+            accentColor: HAA.Colors.gold,
+            icon: "bed.double.fill",
+            distanceNote: "~1.5 mi from venue"
+        ),
+        ConventionLocation(
+            name: "Comfort Inn & Suites",
+            subtitle: "from $110/night",
+            address: "308 S Lincolnway St, North Aurora, IL 60542",
+            category: .hotels,
+            coordinate: CLLocationCoordinate2D(latitude: 41.7931408, longitude: -88.3265529),
+            detail: "Comfort Inn & Suites North Aurora–Naperville. Negotiated HAA group rate: $110/night (excl. taxes). Free cancellation until June 24, 2026 at 4:00 PM CDT. Located ~2 miles from the venue.",
             accentColor: HAA.Colors.gold,
             icon: "bed.double.fill",
             distanceNote: "~2 mi from venue"
         ),
         ConventionLocation(
-            name: "Comfort Inn & Suites",
-            subtitle: "from $110/night",
-            address: "111 N. Farnsworth Ave, Aurora, IL 60505",
-            category: .hotels,
-            coordinate: CLLocationCoordinate2D(latitude: 41.7650, longitude: -88.2980),
-            detail: "Negotiated HAA group rate: $110/night (excl. taxes). Free cancellation until June 24, 2026 at 4:00 PM CDT. Located ~3 miles from the venue. Book early — limited HAA block rooms available.",
-            accentColor: HAA.Colors.gold,
-            icon: "bed.double.fill",
-            distanceNote: "~3 mi from venue"
+            name: "Aurora Balaji Temple",
+            subtitle: "Sri Venkateswara Swami Temple",
+            address: "1145 Sullivan Rd, Aurora, IL 60506",
+            category: .nearby,
+            coordinate: CLLocationCoordinate2D(latitude: 41.7884570, longitude: -88.3498930),
+            detail: "Hindu temple dedicated to Lord Venkateswara (Balaji), about a mile from the convention venue. A popular place of worship and community gathering in the Aurora area.",
+            accentColor: Color(hex: "#B45309"),
+            icon: "building.columns.circle.fill",
+            distanceNote: "~1 mi from venue"
         ),
         ConventionLocation(
             name: "Indian Vegetarian Restaurants",
-            subtitle: "Aurora & Naperville area",
-            address: "Multiple locations nearby",
+            subtitle: "Idly Vada Bistro & more",
+            address: "1521 Ogden Ave, Aurora, IL 60503",
             category: .food,
-            coordinate: CLLocationCoordinate2D(latitude: 41.7850, longitude: -88.2800),
-            detail: "Several South Indian and North Indian vegetarian restaurants are located within 10 minutes of the convention venue. A curated list will be shared in the convention packet.",
+            coordinate: CLLocationCoordinate2D(latitude: 41.7206312, longitude: -88.2775297),
+            detail: "Several South Indian and North Indian vegetarian restaurants are in the Aurora and Naperville area. Idly Vada Bistro on Ogden Ave is one popular option near the western suburbs.",
             accentColor: Color(hex: "#1D9E75"),
             icon: "leaf.fill",
-            distanceNote: "Various locations"
+            distanceNote: "~4 mi from venue"
         ),
         ConventionLocation(
-            name: "Indian Grocery Stores",
-            subtitle: "Patel Brothers & more",
-            address: "Naperville & Schaumburg area",
+            name: "Patel Brothers",
+            subtitle: "Indian Grocery",
+            address: "1568 W Ogden Ave, Naperville, IL 60540",
             category: .food,
-            coordinate: CLLocationCoordinate2D(latitude: 41.7980, longitude: -88.1620),
-            detail: "Patel Brothers and other Indian grocery stores in the greater Chicagoland area are nearby. Patel Brothers Naperville is ~20 min from the venue.",
+            coordinate: CLLocationCoordinate2D(latitude: 41.7684335, longitude: -88.1843883),
+            detail: "Patel Brothers Naperville carries Indian groceries, spices, snacks, and fresh produce. One of the closest major Indian grocery stores to the convention area.",
             accentColor: Color(hex: "#1D9E75"),
             icon: "cart.fill",
-            distanceNote: "~15–20 min drive"
+            distanceNote: "~9 mi from venue"
         ),
         ConventionLocation(
             name: "Play N Thrive Club",
-            subtitle: "Pickleball Tournament Venue",
-            address: "808 IL-59 N, Ste 120, Naperville, IL 60540",
+            subtitle: "Youth Activity Venue",
+            address: "808 S Route 59, Ste 120, Naperville, IL 60540",
             category: .sports,
-            coordinate: CLLocationCoordinate2D(latitude: 41.7568, longitude: -88.2231),
-            detail: "Site of the HAA Youth Committee Pickleball Tournament on Thursday, July 2. Play N Thrive Club features indoor acrylic courts, restrooms, water, lighting, and is wheelchair accessible.",
+            coordinate: CLLocationCoordinate2D(latitude: 41.7562474, longitude: -88.2023907),
+            detail: "Youth activity on Thursday, July 2 (11:00 AM – 5:00 PM): pickleball, badminton, volleyball, and cricket nets. Food and drinks provided. Indoor acrylic courts, restrooms, water, lighting, and wheelchair accessible.",
             accentColor: Color(hex: "#166E3F"),
             icon: "sportscourt.fill",
-            distanceNote: "Thu Jul 2 · 2:00 PM"
+            distanceNote: "Thu Jul 2 · 11:00 AM – 5:00 PM"
         ),
     ]
 }

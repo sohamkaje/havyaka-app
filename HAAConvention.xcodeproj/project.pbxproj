@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		893618FA2FC07EBC0065D856 /* ConventionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618F92FC07EBC0065D856 /* ConventionModels.swift */; };
+		89SCHED12FC082000065D856 /* ScheduleData2026.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89SCHED02FC082000065D856 /* ScheduleData2026.swift */; };
 		893618FC2FC07ECB0065D856 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FB2FC07ECB0065D856 /* AccountView.swift */; };
 		893618FE2FC07ED20065D856 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FD2FC07ED20065D856 /* ContentView.swift */; };
 		893619002FC07EF70065D856 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FF2FC07EF70065D856 /* HomeView.swift */; };
@@ -27,6 +28,7 @@
 
 /* Begin PBXFileReference section */
 		893618F92FC07EBC0065D856 /* ConventionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConventionModels.swift; sourceTree = "<group>"; };
+		89SCHED02FC082000065D856 /* ScheduleData2026.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleData2026.swift; sourceTree = "<group>"; };
 		893618FB2FC07ECB0065D856 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
 		893618FD2FC07ED20065D856 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		893618FF2FC07EF70065D856 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -73,6 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				893618F92FC07EBC0065D856 /* ConventionModels.swift */,
+				89SCHED02FC082000065D856 /* ScheduleData2026.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -197,6 +200,7 @@
 				893618FE2FC07ED20065D856 /* ContentView.swift in Sources */,
 				A107 /* ScheduleView.swift in Sources */,
 				893618FA2FC07EBC0065D856 /* ConventionModels.swift in Sources */,
+				89SCHED12FC082000065D856 /* ScheduleData2026.swift in Sources */,
 				893619082FC080100065D856 /* RegistrationAPI.swift in Sources */,
 				8936190A2FC081200065D856 /* AuthViewModel.swift in Sources */,
 				8936190E2FC081400065D856 /* NetworkMonitor.swift in Sources */,

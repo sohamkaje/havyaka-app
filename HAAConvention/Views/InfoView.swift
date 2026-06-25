@@ -202,47 +202,11 @@ struct InfoTabContent: View {
 
     var venueContent: some View {
         VStack(spacing: 12) {
-            InfoRow(icon: "building.columns.fill", label: "Venue", value: "Rosary High School", color: HAA.Colors.orange)
+            InfoRow(icon: "building.columns.fill", label: "Venue", value: "Rosary College Prep", color: HAA.Colors.orange)
             InfoRow(icon: "map.fill", label: "Address", value: "901 N Edgelawn Dr, Aurora, IL 60506", color: HAA.Colors.orange)
             InfoRow(icon: "calendar.badge.clock", label: "Dates", value: "July 3, 4 & 5, 2026", color: HAA.Colors.gold)
             InfoRow(icon: "moon.stars.fill", label: "Arrive", value: "Thursday evening, July 2", color: HAA.Colors.gold)
             InfoRow(icon: "envelope.fill", label: "Contact", value: "secretary@havyak.org", color: HAA.Colors.orange)
-
-            Divider()
-
-            HStack(spacing: 8) {
-                Link(destination: URL(string: "https://haaconvention.org/registration/")!) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "ticket.fill")
-                            .font(.system(size: 12))
-                        Text("Register")
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(HAA.Colors.orange)
-                    .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-                }
-
-                Link(destination: URL(string: "https://haaconvention.org/accommodations/")!) {
-                    HStack(spacing: 5) {
-                        Image(systemName: "bed.double.fill")
-                            .font(.system(size: 12))
-                        Text("Book Hotel")
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    }
-                    .foregroundColor(HAA.Colors.gold)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(HAA.Colors.goldLight)
-                    .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: HAA.Radius.md)
-                            .stroke(HAA.Colors.gold.opacity(0.3), lineWidth: 0.5)
-                    )
-                }
-            }
         }
     }
 
@@ -306,7 +270,7 @@ struct InfoTabContent: View {
             FAQItem(q: "What food is served?", a: "All meals are 100% vegetarian (Satvika). Traditional Havyaka cuisine is served including South Indian breakfasts, full rice lunches with sambar/rasam, and light dinners. Please inform organizers of any allergies.")
             FAQItem(q: "Which airport should I fly into?", a: "Chicago O'Hare (ORD) is ~40 min drive and preferred. Chicago Midway (MDW) is ~50 min. Rental cars and rideshares are available at both.")
             FAQItem(q: "What is the dress code?", a: "Traditional attire is encouraged for ceremonies and cultural events. Business casual is acceptable for daytime programs. A saree or kurta/dhoti is ideal for the opening ceremony and Yakshagana night.")
-            FAQItem(q: "Is there parking at the venue?", a: "Yes, ample free parking is available on the Rosary High School campus.")
+            FAQItem(q: "Is there parking at the venue?", a: "Yes, ample free parking is available on the Rosary College Prep campus.")
             FAQItem(q: "When does registration close?", a: "Early bird registration ended Feb 8, 2026. Standard registration is still open. Check haaconvention.org for current pricing.")
         }
     }

@@ -5,6 +5,7 @@ struct HomeView: View {
     @Binding var selectedTab: Int
     @Binding var moreSectionRequest: InfoAccountSection?
     @State private var timeRemaining = TimeComponents()
+    @State private var selectedAttraction: StarAttraction? = nil
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -19,12 +20,14 @@ struct HomeView: View {
                     heroSection
                     countdownBar
                     quickAccessGrid
-                    youthSection
                     starAttractions
                     Spacer().frame(height: 90)
                 }
             }
             .background(HAA.Colors.cream)
+        }
+        .sheet(item: $selectedAttraction) { attraction in
+            AttractionDetailSheet(attraction: attraction)
         }
     }
 
@@ -53,7 +56,7 @@ struct HomeView: View {
                     .foregroundColor(HAA.Colors.mutedLight)
 
                 HStack(spacing: 16) {
-                    Label("Rosary High School", systemImage: "mappin.and.ellipse")
+                    Label("Rosary College Prep", systemImage: "mappin.and.ellipse")
                         .font(.system(size: 12, weight: .medium, design: .rounded))
                         .foregroundColor(HAA.Colors.mutedLight)
                     Label("~500 attendees", systemImage: "person.3.fill")
@@ -189,84 +192,17 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Youth Committee Section
-    var youthSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            SectionHeader(title: "Youth Committee — July 2")
-
-            VStack(spacing: 10) {
-                HStack(spacing: 14) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(hex: "#E8F8F0"))
-                            .frame(width: 50, height: 50)
-                        Image(systemName: "sportscourt.fill")
-                            .font(.system(size: 22, weight: .semibold))
-                            .foregroundColor(Color(hex: "#166E3F"))
-                    }
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Pickleball Tournament")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .foregroundColor(HAA.Colors.charcoal)
-                        Text("Thu Jul 2 · 2:00 PM · Open to all youth")
-                            .font(.system(size: 12, design: .rounded))
-                            .foregroundColor(HAA.Colors.muted)
-                        Text("Arrive early — July 2 Pre-Convention")
-                            .font(.system(size: 11, weight: .semibold, design: .rounded))
-                            .foregroundColor(Color(hex: "#166E3F"))
-                    }
-                    Spacer()
-                }
-                .padding(14)
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
-                .overlay(
-                    RoundedRectangle(cornerRadius: HAA.Radius.lg)
-                        .stroke(Color(hex: "#166E3F").opacity(0.3), lineWidth: 1)
-                )
-
-                HStack(spacing: 14) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(hex: "#E8F4FD"))
-                            .frame(width: 50, height: 50)
-                        Image(systemName: "figure.run")
-                            .font(.system(size: 22, weight: .semibold))
-                            .foregroundColor(Color(hex: "#1565A8"))
-                    }
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text("Youth Social & Games")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .foregroundColor(HAA.Colors.charcoal)
-                        Text("Thu Jul 2 · 5:00 PM · Meet all 15 chapters")
-                            .font(.system(size: 12, design: .rounded))
-                            .foregroundColor(HAA.Colors.muted)
-                    }
-                    Spacer()
-                }
-                .padding(14)
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
-                .overlay(
-                    RoundedRectangle(cornerRadius: HAA.Radius.lg)
-                        .stroke(HAA.Colors.border, lineWidth: 0.5)
-                )
-            }
-            .padding(.horizontal, HAA.Spacing.lg)
-        }
-    }
-
     // MARK: - Star Attractions (chronological order, updated list)
     var starAttractions: some View {
         VStack(alignment: .leading, spacing: 0) {
             SectionHeader(title: "Star Attractions")
 
             VStack(spacing: 10) {
-                AttractionCard(icon: "flag.fill",        title: "Grand Opening Ceremony",    subtitle: "July 3 · 2:00 PM · Parade & ceremony",    iconColor: HAA.Colors.orange)
-                AttractionCard(icon: "music.mic",        title: "Anuradha Bhat — Live",      subtitle: "July 3 · 9:00 PM · Musical evening",       iconColor: HAA.Colors.orange)
-                AttractionCard(icon: "music.note.list",  title: "Youth Symphony",            subtitle: "July 4 · 12:30 PM · Young Havyaka talent",  iconColor: HAA.Colors.gold)
-                AttractionCard(icon: "tshirt.fill",      title: "HAA Fashion Show",          subtitle: "July 4 · 2:30 PM · Traditional & fusion",   iconColor: Color(hex: "#C8530A"))
-                AttractionCard(icon: "theatermasks.fill",title: "Grand Yakshagana",          subtitle: "July 4 · 9:00 PM · Tenku Badagu Koodata",   iconColor: HAA.Colors.gold)
+                ForEach(StarAttraction.highlights) { attraction in
+                    AttractionCard(attraction: attraction) {
+                        selectedAttraction = attraction
+                    }
+                }
             }
             .padding(.horizontal, HAA.Spacing.lg)
         }
@@ -342,40 +278,112 @@ struct QuickCard: View {
 
 // MARK: - Attraction Card
 struct AttractionCard: View {
-    let icon: String
-    let title: String
-    let subtitle: String
-    let iconColor: Color
+    let attraction: StarAttraction
+    let onTap: () -> Void
 
     var body: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(HAA.Colors.charcoal)
-                    .frame(width: 50, height: 50)
-                Image(systemName: icon)
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(iconColor)
-            }
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title)
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundColor(Color(hex: "#F5E8C0"))
-                Text(subtitle)
-                    .font(.system(size: 12, design: .rounded))
+        Button(action: onTap) {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(HAA.Colors.charcoal)
+                        .frame(width: 50, height: 50)
+                    Image(systemName: attraction.icon)
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(attraction.iconColor)
+                }
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(attraction.title)
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(Color(hex: "#F5E8C0"))
+                        .multilineTextAlignment(.leading)
+                    Text(attraction.subtitle)
+                        .font(.system(size: 12, design: .rounded))
+                        .foregroundColor(HAA.Colors.mutedLight)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(HAA.Colors.mutedLight)
             }
-            Spacer()
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(HAA.Colors.mutedLight)
+            .padding(14)
+            .background(HAA.Colors.charcoal)
+            .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
+            .overlay(
+                RoundedRectangle(cornerRadius: HAA.Radius.lg)
+                    .stroke(HAA.Colors.gold.opacity(0.12), lineWidth: 0.5)
+            )
         }
-        .padding(14)
-        .background(HAA.Colors.charcoal)
-        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
-        .overlay(
-            RoundedRectangle(cornerRadius: HAA.Radius.lg)
-                .stroke(HAA.Colors.gold.opacity(0.12), lineWidth: 0.5)
-        )
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Attraction Detail Sheet
+struct AttractionDetailSheet: View {
+    let attraction: StarAttraction
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HighlightBadge()
+                        Text(attraction.title)
+                            .font(HAA.Font.serif(22, weight: .bold))
+                            .foregroundColor(HAA.Colors.charcoal)
+                        if let kannada = attraction.kannada {
+                            Text(kannada)
+                                .font(HAA.Font.serif(15))
+                                .foregroundColor(HAA.Colors.muted)
+                        }
+                        Text(attraction.subtitle)
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundColor(HAA.Colors.orange)
+                    }
+                    .padding(HAA.Spacing.lg)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(HAA.Colors.goldLight)
+
+                    Divider()
+
+                    HStack(alignment: .top, spacing: 16) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(HAA.Colors.charcoal)
+                                .frame(width: 56, height: 56)
+                            Image(systemName: attraction.icon)
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundColor(attraction.iconColor)
+                        }
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("What to Expect")
+                                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                                .tracking(0.8)
+                                .foregroundColor(HAA.Colors.muted)
+                                .textCase(.uppercase)
+                            Text(attraction.description)
+                                .font(.system(size: 15, design: .rounded))
+                                .foregroundColor(HAA.Colors.charcoal)
+                                .lineSpacing(4)
+                        }
+                    }
+                    .padding(HAA.Spacing.lg)
+
+                    Spacer(minLength: 40)
+                }
+            }
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .font(.system(size: 15, weight: .semibold, design: .rounded))
+                        .foregroundColor(HAA.Colors.orange)
+                }
+            }
+            .background(HAA.Colors.cream.ignoresSafeArea())
+        }
     }
 }

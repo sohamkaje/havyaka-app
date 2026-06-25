@@ -32,11 +32,12 @@ struct ScheduleView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HAANavBar(title: "Schedule", subtitle: "ಸಮಾವೇಶದ ಪಕ್ಷಿನೋಟ")
+            HAANavBar(title: "Schedule", subtitle: ConventionData.scheduleSubtitle)
             daySelector
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
+                    scheduleBanner
                     dayHeader
                     eventList
                     Spacer().frame(height: 90)
@@ -89,6 +90,26 @@ struct ScheduleView: View {
         )
     }
 
+    // MARK: - Schedule Banner
+    var scheduleBanner: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(ConventionData.scheduleTitle)
+                .font(HAA.Font.serif(18, weight: .bold))
+                .foregroundColor(Color(hex: "#F5E8C0"))
+            Text(ConventionData.scheduleSubtitle)
+                .font(HAA.Font.serif(13))
+                .foregroundColor(HAA.Colors.mutedLight)
+            Text(ConventionData.scheduleTagline)
+                .font(.system(size: 11, design: .rounded))
+                .foregroundColor(HAA.Colors.mutedLight.opacity(0.85))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, HAA.Spacing.lg)
+        .padding(.vertical, 16)
+        .background(HAA.Colors.charcoal)
+    }
+
     // MARK: - Day Header
     var dayHeader: some View {
         HStack {
@@ -128,101 +149,70 @@ struct EventCard: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .top, spacing: 0) {
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(spacing: 6) {
+                    if event.isHighlight { HighlightBadge() }
+                    EventTagChip(tag: event.tag)
+                    if let chapter = event.chapter {
+                        Text(chapter)
+                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                            .foregroundColor(HAA.Colors.gold)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(HAA.Colors.goldLight)
+                            .clipShape(Capsule())
+                    }
+                }
 
-                // ── Left: time column ──
-                VStack(alignment: .trailing) {
-                    Text(event.time)
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                Text(event.title)
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundColor(HAA.Colors.charcoal)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if let kannada = event.kannada {
+                    Text(kannada)
+                        .font(HAA.Font.serif(12))
                         .foregroundColor(HAA.Colors.muted)
-                        .multilineTextAlignment(.trailing)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.75)
-                        .allowsTightening(true)
                 }
-                .frame(width: 52, alignment: .trailing)
-                .padding(.top, 18)
-                .padding(.trailing, 6)
 
-                // ── Timeline dot ──
-                VStack(spacing: 0) {
-                    ZStack {
-                        if event.isHighlight {
-                            Circle()
-                                .fill(HAA.Colors.gold)
-                                .frame(width: 10, height: 10)
-                            Circle()
-                                .stroke(HAA.Colors.gold.opacity(0.4), lineWidth: 2)
-                                .frame(width: 14, height: 14)
-                        } else {
-                            Circle()
-                                .fill(HAA.Colors.orange.opacity(0.15))
-                                .frame(width: 10, height: 10)
-                            Circle()
-                                .fill(HAA.Colors.orange)
-                                .frame(width: 6, height: 6)
-                        }
-                    }
-                    .padding(.top, 20)
+                HStack(spacing: 4) {
+                    Image(systemName: "mappin")
+                        .font(.system(size: 10, weight: .semibold))
+                    Text(event.venue)
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
                 }
-                .padding(.trailing, 6)
+                .foregroundColor(HAA.Colors.orange.opacity(0.85))
 
-                // ── Right: card content ──
-                VStack(alignment: .leading, spacing: 7) {
-                    // Tag row
-                    HStack(spacing: 6) {
-                        if event.isHighlight { HighlightBadge() }
-                        EventTagChip(tag: event.tag)
-                    }
+                Text(event.details)
+                    .font(.system(size: 12, design: .rounded))
+                    .foregroundColor(HAA.Colors.muted)
+                    .lineLimit(1)
 
-                    // Title
-                    Text(event.title)
-                        .font(.system(size: 15, weight: .semibold, design: .rounded))
-                        .foregroundColor(HAA.Colors.charcoal)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-
-                    // Kannada subtitle
-                    if let kannada = event.kannada {
-                        Text(kannada)
-                            .font(HAA.Font.serif(12))
-                            .foregroundColor(HAA.Colors.muted)
-                    }
-
-                    // Details preview
-                    Text(event.details)
-                        .font(.system(size: 12, design: .rounded))
-                        .foregroundColor(HAA.Colors.muted)
-                        .lineLimit(2)
-
-                    // Tap hint
-                    HStack {
-                        Spacer()
-                        HStack(spacing: 3) {
-                            Text("Tap for details")
-                                .font(.system(size: 11, weight: .medium, design: .rounded))
-                                .foregroundColor(HAA.Colors.orange)
-                            Image(systemName: "arrow.up.right")
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundColor(HAA.Colors.orange)
-                        }
+                HStack {
+                    Spacer()
+                    HStack(spacing: 3) {
+                        Text("Tap for details")
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .foregroundColor(HAA.Colors.orange)
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundColor(HAA.Colors.orange)
                     }
                 }
-                .padding(.leading, 12)
-                .padding(.top, 14)
-                .padding(.trailing, 14)
-                .padding(.bottom, 14)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
-                .overlay(
-                    RoundedRectangle(cornerRadius: HAA.Radius.lg)
-                        .stroke(
-                            event.isHighlight ? HAA.Colors.gold.opacity(0.4) : HAA.Colors.border,
-                            lineWidth: event.isHighlight ? 1 : 0.5
-                        )
-                )
             }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.lg))
+            .overlay(
+                RoundedRectangle(cornerRadius: HAA.Radius.lg)
+                    .stroke(
+                        event.isHighlight ? HAA.Colors.gold.opacity(0.4) : HAA.Colors.border,
+                        lineWidth: event.isHighlight ? 1 : 0.5
+                    )
+            )
         }
         .buttonStyle(.plain)
     }
@@ -243,6 +233,15 @@ struct EventDetailSheet: View {
                         HStack(spacing: 8) {
                             EventTagChip(tag: event.tag)
                             if event.isHighlight { HighlightBadge() }
+                            if let chapter = event.chapter {
+                                Text(chapter)
+                                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                                    .foregroundColor(HAA.Colors.gold)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(HAA.Colors.goldLight)
+                                    .clipShape(Capsule())
+                            }
                         }
                         Text(event.title)
                             .font(HAA.Font.serif(22, weight: .bold))
@@ -252,14 +251,6 @@ struct EventDetailSheet: View {
                                 .font(HAA.Font.serif(15))
                                 .foregroundColor(HAA.Colors.muted)
                         }
-                        HStack(spacing: 6) {
-                            Image(systemName: "clock.fill")
-                                .font(.system(size: 13))
-                                .foregroundColor(HAA.Colors.gold)
-                            Text(event.time)
-                                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                .foregroundColor(HAA.Colors.charcoal)
-                        }
                     }
                     .padding(HAA.Spacing.lg)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -268,7 +259,6 @@ struct EventDetailSheet: View {
                     Divider()
 
                     VStack(alignment: .leading, spacing: 20) {
-                        // Icon + description
                         HStack(alignment: .top, spacing: 16) {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 14)
@@ -278,12 +268,20 @@ struct EventDetailSheet: View {
                                     .font(.system(size: 24, weight: .semibold))
                                     .foregroundColor(event.tag.foregroundColor)
                             }
-                            VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: 8) {
                                 Text("About this event")
                                     .font(.system(size: 11, weight: .semibold, design: .rounded))
                                     .tracking(0.8)
                                     .foregroundColor(HAA.Colors.muted)
                                     .textCase(.uppercase)
+                                HStack(spacing: 6) {
+                                    Image(systemName: "clock.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(HAA.Colors.gold)
+                                    Text(event.time)
+                                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                        .foregroundColor(HAA.Colors.charcoal)
+                                }
                                 Text(event.details)
                                     .font(.system(size: 15, design: .rounded))
                                     .foregroundColor(HAA.Colors.charcoal)
@@ -305,10 +303,10 @@ struct EventDetailSheet: View {
                                     .font(.system(size: 22))
                                     .foregroundColor(HAA.Colors.orange)
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text("Rosary High School")
+                                    Text(event.venue)
                                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                                         .foregroundColor(HAA.Colors.charcoal)
-                                    Text("901 N Edgelawn Dr, Aurora, IL 60506")
+                                    Text(event.locationAddress)
                                         .font(.system(size: 12, design: .rounded))
                                         .foregroundColor(HAA.Colors.muted)
                                 }

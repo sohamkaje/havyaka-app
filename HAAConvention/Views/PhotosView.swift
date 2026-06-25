@@ -1,6 +1,7 @@
 import SwiftUI
 import PhotosUI
 import UniformTypeIdentifiers
+import UIKit
 
 // MARK: - Photos View
 struct PhotosView: View {
@@ -374,6 +375,28 @@ struct PhotoTile: View {
 }
 
 // MARK: - Upload Photo Sheet
+
+private struct UploadAlertInfo: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
+}
+
+private struct GalleryImport: Transferable {
+    let data: Data
+
+    static var transferRepresentation: some TransferRepresentation {
+        DataRepresentation(importedContentType: .image) { GalleryImport(data: $0) }
+        DataRepresentation(importedContentType: .jpeg) { GalleryImport(data: $0) }
+        DataRepresentation(importedContentType: .png) { GalleryImport(data: $0) }
+        DataRepresentation(importedContentType: .heic) { GalleryImport(data: $0) }
+        DataRepresentation(importedContentType: .movie) { GalleryImport(data: $0) }
+        DataRepresentation(importedContentType: .video) { GalleryImport(data: $0) }
+        DataRepresentation(importedContentType: .mpeg4Movie) { GalleryImport(data: $0) }
+        DataRepresentation(importedContentType: .quickTimeMovie) { GalleryImport(data: $0) }
+    }
+}
+
 struct UploadPhotoSheet: View {
     @Binding var isPresented: Bool
     let uploaderName: String
@@ -390,25 +413,24 @@ struct UploadPhotoSheet: View {
     @State private var showSuccess = false
     @State private var isUploading = false
     @State private var uploadError: String?
+    @State private var uploadAlertItem: UploadAlertInfo?
 
     let days = ["July 2", "July 3", "July 4", "July 5"]
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
+                    if let uploadError {
+                        uploadErrorBanner(uploadError)
+                            .padding(.horizontal, HAA.Spacing.lg)
+                            .padding(.bottom, 12)
+                    }
+
                     mediaPickerSection
                     Divider().padding(.vertical, 20)
                     formSection
                     Spacer().frame(height: 20)
-
-                    if let uploadError {
-                        Text(uploadError)
-                            .font(.system(size: 13, design: .rounded))
-                            .foregroundColor(.red)
-                            .padding(.horizontal, HAA.Spacing.lg)
-                            .padding(.bottom, 8)
-                    }
 
                     if showSuccess {
                         successBanner.padding(.horizontal, HAA.Spacing.lg)
@@ -433,6 +455,7 @@ struct UploadPhotoSheet: View {
                 }
                 .padding(.top, 8)
             }
+            .scrollDismissesKeyboard(.interactively)
             .background(HAA.Colors.cream.ignoresSafeArea())
             .navigationTitle("Add Photo or Video")
             .navigationBarTitleDisplayMode(.inline)
@@ -441,8 +464,59 @@ struct UploadPhotoSheet: View {
                     Button("Cancel") { isPresented = false }
                         .foregroundColor(HAA.Colors.muted)
                 }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button {
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder),
+                            to: nil, from: nil, for: nil
+                        )
+                    } label: {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(HAA.Colors.orange)
+                    }
+                }
+            }
+            .alert(item: $uploadAlertItem) { info in
+                Alert(
+                    title: Text(info.title),
+                    message: Text(info.message),
+                    dismissButton: .default(Text("OK")) {
+                        if selectedFileData == nil {
+                            selectedItem = nil
+                        }
+                    }
+                )
             }
         }
+    }
+
+    private func uploadErrorBanner(_ message: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 16))
+                .foregroundColor(.red)
+            Text(message)
+                .font(.system(size: 13, design: .rounded))
+                .foregroundColor(HAA.Colors.charcoal)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.red.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+        .overlay(
+            RoundedRectangle(cornerRadius: HAA.Radius.md)
+                .stroke(Color.red.opacity(0.25), lineWidth: 1)
+        )
+    }
+
+    @MainActor
+    private func presentUploadAlert(title: String, message: String) async {
+        uploadError = message
+        try? await Task.sleep(for: .milliseconds(600))
+        uploadAlertItem = UploadAlertInfo(title: title, message: message)
     }
 
     var mediaPickerSection: some View {
@@ -457,7 +531,7 @@ struct UploadPhotoSheet: View {
                             .foregroundColor(HAA.Colors.orange.opacity(0.5))
                     )
 
-                if selectedFileData != nil {
+                if let data = selectedFileData {
                     VStack(spacing: 8) {
                         Image(systemName: selectedMediaType == .video ? "video.fill" : "checkmark.circle.fill")
                             .font(.system(size: 36))
@@ -465,6 +539,9 @@ struct UploadPhotoSheet: View {
                         Text(selectedMediaType == .video ? "Video selected" : "Photo selected")
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
                             .foregroundColor(Color(hex: "#1D9E75"))
+                        Text(PhotosLimits.formattedSize(Int64(data.count)))
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundColor(HAA.Colors.charcoal)
                         Text("Tap to change")
                             .font(.system(size: 11, design: .rounded))
                             .foregroundColor(HAA.Colors.muted)
@@ -490,6 +567,7 @@ struct UploadPhotoSheet: View {
         }
     }
 
+    @MainActor
     func loadSelectedItem(_ item: PhotosPickerItem?) async {
         uploadError = nil
         guard let item else {
@@ -501,27 +579,54 @@ struct UploadPhotoSheet: View {
         selectedMediaType = isVideo ? .video : .image
         selectedFileName = isVideo ? "upload.mp4" : "upload.jpg"
 
-        if let data = try? await item.loadTransferable(type: Data.self) {
-            if let sizeError = PhotosLimits.validateFileSize(Int64(data.count)) {
-                uploadError = sizeError
-                selectedFileData = nil
-                return
-            }
-            selectedFileData = data
+        guard let imported = try? await item.loadTransferable(type: GalleryImport.self) else {
+            selectedFileData = nil
+            selectedItem = nil
+            await presentUploadAlert(
+                title: "Could Not Read File",
+                message: "We couldn't load that photo or video. Try choosing a different file."
+            )
+            return
         }
+
+        var data = imported.data
+        if !isVideo {
+            data = PhotoImageProcessor.prepareForUpload(data) ?? data
+            selectedFileName = "upload.jpg"
+        }
+
+        if let sizeError = PhotosLimits.validateFileSize(Int64(data.count)) {
+            selectedFileData = nil
+            selectedItem = nil
+            await presentUploadAlert(title: "File Too Large", message: sizeError)
+            return
+        }
+
+        uploadError = nil
+        selectedFileData = data
     }
 
     var formSection: some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 6) {
                 fieldLabel("Caption")
-                TextField("What's happening?", text: $caption, axis: .vertical)
-                    .font(.system(size: 14, design: .rounded))
-                    .padding(12)
-                    .background(Color.white)
-                    .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
-                    .overlay(RoundedRectangle(cornerRadius: HAA.Radius.md).stroke(HAA.Colors.border, lineWidth: 0.5))
-                    .lineLimit(3)
+                ZStack(alignment: .topLeading) {
+                    AccessoryTextView(text: $caption)
+                        .frame(minHeight: 88)
+                    if caption.isEmpty {
+                        Text("What's happening?")
+                            .font(.system(size: 14, design: .rounded))
+                            .foregroundColor(HAA.Colors.muted)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                            .allowsHitTesting(false)
+                    }
+                }
+                .padding(4)
+                .background(Color.white)
+                .colorScheme(.light)
+                .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+                .overlay(RoundedRectangle(cornerRadius: HAA.Radius.md).stroke(HAA.Colors.border, lineWidth: 0.5))
             }
 
             VStack(alignment: .leading, spacing: 6) {
@@ -616,6 +721,12 @@ struct UploadPhotoSheet: View {
 
     func handleUpload() {
         guard let data = selectedFileData else { return }
+
+        if let sizeError = PhotosLimits.validateFileSize(Int64(data.count)) {
+            Task { await presentUploadAlert(title: "File Too Large", message: sizeError) }
+            return
+        }
+
         isUploading = true
         uploadError = nil
 
@@ -639,8 +750,8 @@ struct UploadPhotoSheet: View {
                 try? await Task.sleep(nanoseconds: 1_500_000_000)
                 isPresented = false
             } catch {
-                uploadError = error.localizedDescription
                 isUploading = false
+                await presentUploadAlert(title: "Upload Failed", message: error.localizedDescription)
             }
         }
     }
@@ -805,5 +916,40 @@ struct PhotoDetailSheet: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(HAA.Colors.orangeLight.opacity(0.6))
         .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
+    }
+}
+
+// MARK: - Photo orientation fix (EXIF)
+/// Phone photos are often stored rotated with EXIF metadata. Re-encode upright before upload
+/// so the gallery displays correctly even if server-side processing skips orientation.
+enum PhotoImageProcessor {
+    static let maxDimension: CGFloat = 2048
+
+    static func prepareForUpload(_ data: Data) -> Data? {
+        guard let image = UIImage(data: data) else { return nil }
+        let upright = image.fixedOrientation()
+        let scaled = upright.scaledToMaxDimension(maxDimension)
+        return scaled.jpegData(compressionQuality: 0.85)
+    }
+}
+
+private extension UIImage {
+    func fixedOrientation() -> UIImage {
+        guard imageOrientation != .up else { return self }
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { _ in
+            draw(in: CGRect(origin: .zero, size: size))
+        }
+    }
+
+    func scaledToMaxDimension(_ maxDimension: CGFloat) -> UIImage {
+        let maxSide = max(size.width, size.height)
+        guard maxSide > maxDimension else { return self }
+        let scale = maxDimension / maxSide
+        let newSize = CGSize(width: size.width * scale, height: size.height * scale)
+        let renderer = UIGraphicsImageRenderer(size: newSize)
+        return renderer.image { _ in
+            draw(in: CGRect(origin: .zero, size: newSize))
+        }
     }
 }

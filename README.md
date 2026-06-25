@@ -2,7 +2,7 @@
 
 **The official mobile app for the Havyaka Association of the Americas (HAA) 21st Biennial Convention.**
 
-July 3–5, 2026 · Rosary High School · Aurora, Illinois
+July 3–5, 2026 · Rosary College Prep · Aurora, Illinois
 
 Built with SwiftUI for **iPhone only · iOS 17+ · Xcode 15+**
 

@@ -10,6 +10,7 @@ struct HAAConventionApp: App {
             ContentView()
                 .environmentObject(auth)
                 .environmentObject(network)
+                .preferredColorScheme(.light)
         }
     }
 }

@@ -20,26 +20,40 @@ struct AccessView: View {
     }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
-                hero
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    hero
 
-                VStack(spacing: 20) {
-                    switch screen {
-                    case .welcome:
-                        welcomeContent
-                    case .signUp:
-                        signUpContent
-                    case .logIn:
-                        logInContent
+                    VStack(spacing: 20) {
+                        switch screen {
+                        case .welcome:
+                            welcomeContent
+                        case .signUp:
+                            signUpContent
+                        case .logIn:
+                            logInContent
+                        }
                     }
+                    .padding(.horizontal, HAA.Spacing.lg)
+                    .padding(.top, 28)
+                    .padding(.bottom, 90)
                 }
-                .padding(.horizontal, HAA.Spacing.lg)
-                .padding(.top, 28)
-                .padding(.bottom, 90)
             }
+            .scrollDismissesKeyboard(.interactively)
+            .background(HAA.Colors.cream.ignoresSafeArea())
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        focusedField = nil
+                    }
+                    .font(.system(size: 16, weight: .semibold, design: .rounded))
+                    .foregroundStyle(HAA.Colors.orange)
+                }
+            }
+            .toolbar(.hidden, for: .navigationBar)
         }
-        .background(HAA.Colors.cream.ignoresSafeArea())
     }
 
     // MARK: - Welcome
@@ -225,11 +239,11 @@ struct AccessView: View {
             text: $loginCode,
             field: .code,
             placeholder: "12345",
-            keyboard: .numberPad
+            keyboard: .numberPad,
+            useAccessoryKeyboard: true,
+            digitsOnly: true,
+            maxLength: 5
         )
-        .onChange(of: loginCode) { _, newValue in
-            loginCode = String(newValue.filter(\.isNumber).prefix(5))
-        }
     }
 
     @ViewBuilder
@@ -330,7 +344,10 @@ struct AccessView: View {
         text: Binding<String>,
         field: Field,
         placeholder: String,
-        keyboard: UIKeyboardType = .default
+        keyboard: UIKeyboardType = .default,
+        useAccessoryKeyboard: Bool = false,
+        digitsOnly: Bool = false,
+        maxLength: Int? = nil
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             formLabel(label)
@@ -338,15 +355,37 @@ struct AccessView: View {
                 Image(systemName: icon)
                     .font(.system(size: 15))
                     .foregroundColor(HAA.Colors.muted)
-                TextField(placeholder, text: text)
-                    .font(.system(size: 15, design: .rounded))
-                    .keyboardType(keyboard)
-                    .textInputAutocapitalization(keyboard == .emailAddress ? .never : .never)
-                    .autocorrectionDisabled()
-                    .focused($focusedField, equals: field)
+                if useAccessoryKeyboard {
+                    AccessoryTextField(
+                        text: text,
+                        placeholder: placeholder,
+                        keyboardType: keyboard,
+                        textContentType: keyboard == .emailAddress ? .emailAddress : .oneTimeCode,
+                        digitsOnly: digitsOnly,
+                        maxLength: maxLength,
+                        onFocusChange: { focused in
+                            focusedField = focused ? field : (focusedField == field ? nil : focusedField)
+                        },
+                        onDone: { focusedField = nil }
+                    )
+                    .frame(maxWidth: .infinity, minHeight: 22)
+                } else {
+                    TextField(placeholder, text: text)
+                        .font(.system(size: 15, design: .rounded))
+                        .foregroundStyle(HAA.Colors.charcoal)
+                        .tint(HAA.Colors.orange)
+                        .keyboardType(keyboard)
+                        .textInputAutocapitalization(keyboard == .emailAddress ? .never : .never)
+                        .autocorrectionDisabled()
+                        .textContentType(keyboard == .emailAddress ? .emailAddress : .oneTimeCode)
+                        .submitLabel(.done)
+                        .onSubmit { focusedField = nil }
+                        .focused($focusedField, equals: field)
+                }
             }
             .padding(14)
             .background(Color.white)
+            .colorScheme(.light)
             .clipShape(RoundedRectangle(cornerRadius: HAA.Radius.md))
             .overlay(
                 RoundedRectangle(cornerRadius: HAA.Radius.md)
