@@ -412,7 +412,7 @@ struct VenueBlueprintSheet: View {
 
                 areaGuideSection
             }
-            .navigationTitle("Rosary College Prep")
+            .navigationTitle("Venue Guide")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -440,13 +440,16 @@ struct VenueBlueprintSheet: View {
     private var campusLegendRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 10) {
-                legendChip(color: Color(hex: "#F5C6A5"), label: "Meals / Tea")
+                legendChip(color: Color(hex: "#F5C6A5"), label: "Dining")
                 legendChip(color: Color(hex: "#F5D76E"), label: "Auditorium")
                 legendChip(color: Color(hex: "#90CAF9"), label: "Library / Youth")
-                legendChip(color: Color(hex: "#A5D6A7"), label: "Outdoor Lawn")
-                legendChip(color: Color(hex: "#CE93D8"), label: "Registration")
+                legendChip(color: Color(hex: "#A5D6A7"), label: "Courtyard / Homa")
+                legendChip(color: Color(hex: "#FFB74D"), label: "Jaatre")
+                legendChip(color: Color(hex: "#CE93D8"), label: "Exhibition")
+                legendChip(color: .white, label: "Breakout", stroke: true)
+                legendChip(color: Color(hex: "#66BB6A"), label: "Green Rooms")
+                legendChip(color: Color(hex: "#F48FB1"), label: "Check-in")
                 legendChip(color: Color(hex: "#F5F0E1"), label: "Hallways", stroke: true)
-                legendChip(color: .white, label: "Breakout Rooms", stroke: true)
             }
             .padding(.horizontal, HAA.Spacing.lg)
             .padding(.vertical, 10)
@@ -514,7 +517,7 @@ struct VenueBlueprintSheet: View {
                 .padding(.horizontal, HAA.Spacing.lg)
                 .padding(.bottom, 16)
             }
-            .frame(maxHeight: 180)
+            .frame(maxHeight: 240)
             .background(HAA.Colors.cream)
         }
         .overlay(Rectangle().fill(HAA.Colors.border).frame(height: 0.5), alignment: .top)
@@ -531,45 +534,70 @@ struct CampusArea: Identifiable {
 
     static let conventionAreas: [CampusArea] = [
         CampusArea(
-            label: "Main Auditorium",
+            label: "Annapoorna Bhojana Shale (Gym)",
+            color: Color(hex: "#F5C6A5"),
+            description: "Breakfast, lunch, and dinner."
+        ),
+        CampusArea(
+            label: "Havya Paakashale (Cafeteria)",
+            color: Color(hex: "#F5C6A5"),
+            description: "Tea and snacks."
+        ),
+        CampusArea(
+            label: "Ahichhatra Auditorium",
             color: Color(hex: "#F5D76E"),
-            description: "Opening ceremony, cultural programs, Yakshagana, musical night, and General Body Meeting."
+            description: "Main program hall — opening ceremony, cultural programs, Yakshagana, musical night, and General Body Meeting."
         ),
         CampusArea(
-            label: "Gym — Lunch / Dinner",
-            color: Color(hex: "#F5C6A5"),
-            description: "Breakfast, networking lunch, dinners, and Sunday lunch-to-go."
+            label: "Vishwamitra Kutira (Library)",
+            color: Color(hex: "#90CAF9"),
+            description: "Youth activity space."
         ),
         CampusArea(
-            label: "Tea Break",
-            color: Color(hex: "#F5C6A5"),
-            description: "Afternoon tea breaks during the program."
-        ),
-        CampusArea(
-            label: "Outdoor Lawn (Homa)",
+            label: "Havya Kavya Yaga Shale (Courtyard)",
             color: Color(hex: "#A5D6A7"),
-            description: "Gana Homa & Rudra Homa on Friday morning."
+            description: "Gana Homa, Rudra Homa, and other rituals."
+        ),
+        CampusArea(
+            label: "Jaatre",
+            color: Color(hex: "#FFB74D"),
+            description: "Corridor stalls along the left corridor — exhibition and artisan market."
+        ),
+        CampusArea(
+            label: "Exhibition & Sales",
+            color: Color(hex: "#CE93D8"),
+            description: "Angirasa Kutira (Room 201) and Atri Kutira (Room 203)."
         ),
         CampusArea(
             label: "Breakout Rooms",
             color: .white,
-            description: "Bhagavad Geetha, Jyothishya, satsang, and other breakout sessions.",
+            description: "Bharadvaja Kutira (Room 204) and Jamadagni Kutira (Room 206) — Bhagavad Geetha, Jyothishya, satsang, and other sessions.",
             needsBorder: true
         ),
         CampusArea(
-            label: "Library / Youth Zone",
+            label: "Reserved Practice Rooms",
+            color: Color(hex: "#C8E6C9"),
+            description: "Rooms 105, 106, 107, 200, 202, and 207."
+        ),
+        CampusArea(
+            label: "Green Rooms (Backstage)",
+            color: Color(hex: "#66BB6A"),
+            description: "Orchestra Room (ladies), Drama Storage (men's), and Scene Storage (common)."
+        ),
+        CampusArea(
+            label: "Dressing Rooms",
             color: Color(hex: "#90CAF9"),
-            description: "Youth activities and lounge space."
+            description: "Men's: Rooms 101, 103 · Ladies': Rooms 102, 104."
         ),
         CampusArea(
-            label: "Registration",
-            color: Color(hex: "#CE93D8"),
-            description: "Convention check-in near the main entrance."
+            label: "Reserved Rooms",
+            color: Color(hex: "#B39DDB"),
+            description: "Gautama Kutira (205) — Yakshagana team · Vasishta Kutira (209) — Youth Symphony · Kashyapa Kutira (208) — supply room."
         ),
         CampusArea(
-            label: "Parking Lot",
-            color: Color(hex: "#B0BEC5"),
-            description: "Free parking off N Edgelawn Dr."
+            label: "Check-in Desk",
+            color: Color(hex: "#F48FB1"),
+            description: "Convention check-in at the main entrance."
         ),
     ]
 }

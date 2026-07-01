@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"sweetpad.build.xcodeWorkspacePath": "HAAConvention.xcodeproj/project.xcworkspace"
+	}
+}
