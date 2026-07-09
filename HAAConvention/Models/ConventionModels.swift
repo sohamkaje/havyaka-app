@@ -66,7 +66,7 @@ struct ScheduleEvent: Identifiable {
     let details: String
     let icon: String
     var chapter: String? = nil
-    var venue: String = "Main Auditorium"
+    var venue: String = "Ahichhatra Auditorium"
     var isHighlight: Bool = false
 
     /// Full street address for the event detail sheet.
@@ -206,7 +206,7 @@ struct StarAttraction: Identifiable {
             icon: "figure.dance",
             title: "Maya Leela — Youth Dance Production",
             subtitle: "Dance drama by all chapter youth",
-            description: "A grand dance drama production bringing together youth from HAA chapters across North America — a highlight of Friday evening's cultural program in the Main Auditorium.",
+            description: "A grand dance drama production bringing together youth from HAA chapters across North America — a highlight of Friday evening's cultural program in the Ahichhatra Auditorium.",
             kannada: "ಮಾಯಾ ಲೀಲಾ — ಯುವ ನೃತ್ಯ ನಿರೂಪಣೆ",
             iconColor: HAA.Colors.orange
         ),
@@ -233,7 +233,7 @@ struct StarAttraction: Identifiable {
             icon: "music.quarternote.3",
             title: "Jugalbandi of Music",
             subtitle: "Vinayak Hegde & team",
-            description: "A musical jugalbandi featuring Vinayak Hegde and team — an evening of collaborative classical performance and virtuoso interplay in the Main Auditorium.",
+            description: "A musical jugalbandi featuring Vinayak Hegde and team — an evening of collaborative classical performance and virtuoso interplay in the Ahichhatra Auditorium.",
             kannada: "ಸಂಗೀತ ಜುಗಲ್ಬಂದಿ",
             iconColor: HAA.Colors.orange
         ),
@@ -466,7 +466,7 @@ struct ConventionData {
             address: "2423 Bushwood Dr, Aurora, IL 60506",
             category: .hotels,
             coordinate: CLLocationCoordinate2D(latitude: 41.7916938, longitude: -88.3765416),
-            detail: "Negotiated HAA group rate: $139/night (excl. taxes). Free cancellation before July 1, 2026 at 11:59 PM CDT. Located ~1.5 miles from the venue. Use the HAA group code when booking.",
+            detail: "Negotiated HAA group rate: $139/night (excl. taxes). Free cancellation before July 1, 2026 at 11:59 PM CDT. Located ~1.5 miles from the venue.",
             accentColor: HAA.Colors.gold,
             icon: "bed.double.fill",
             distanceNote: "~1.5 mi from venue"
@@ -477,7 +477,7 @@ struct ConventionData {
             address: "308 S Lincolnway St, North Aurora, IL 60542",
             category: .hotels,
             coordinate: CLLocationCoordinate2D(latitude: 41.7931408, longitude: -88.3265529),
-            detail: "Comfort Inn & Suites North Aurora–Naperville. Negotiated HAA group rate: $110/night (excl. taxes). Free cancellation until June 24, 2026 at 4:00 PM CDT. Located ~2 miles from the venue.",
+            detail: "Comfort Inn & Suites North Aurora–Naperville. Negotiated HAA group rate: $110/night (excl. taxes). Free cancellation until June 24, 2026 at 4:00 PM CDT.",
             accentColor: HAA.Colors.gold,
             icon: "bed.double.fill",
             distanceNote: "~2 mi from venue"
@@ -488,7 +488,7 @@ struct ConventionData {
             address: "1145 Sullivan Rd, Aurora, IL 60506",
             category: .nearby,
             coordinate: CLLocationCoordinate2D(latitude: 41.7884570, longitude: -88.3498930),
-            detail: "Hindu temple dedicated to Lord Venkateswara (Balaji), about a mile from the convention venue. A popular place of worship and community gathering in the Aurora area.",
+            detail: "Hindu temple dedicated to Lord Venkateswara (Balaji), about a mile from the convention venue.",
             accentColor: Color(hex: "#B45309"),
             icon: "building.columns.circle.fill",
             distanceNote: "~1 mi from venue"
@@ -499,7 +499,7 @@ struct ConventionData {
             address: "1521 Ogden Ave, Aurora, IL 60503",
             category: .food,
             coordinate: CLLocationCoordinate2D(latitude: 41.7206312, longitude: -88.2775297),
-            detail: "Several South Indian and North Indian vegetarian restaurants are in the Aurora and Naperville area. Idly Vada Bistro on Ogden Ave is one popular option near the western suburbs.",
+            detail: "Several South Indian and North Indian vegetarian restaurants are in the Aurora and Naperville area.",
             accentColor: Color(hex: "#1D9E75"),
             icon: "leaf.fill",
             distanceNote: "~4 mi from venue"
@@ -510,7 +510,7 @@ struct ConventionData {
             address: "1568 W Ogden Ave, Naperville, IL 60540",
             category: .food,
             coordinate: CLLocationCoordinate2D(latitude: 41.7684335, longitude: -88.1843883),
-            detail: "Patel Brothers Naperville carries Indian groceries, spices, snacks, and fresh produce. One of the closest major Indian grocery stores to the convention area.",
+            detail: "Patel Brothers Naperville carries Indian groceries, spices, snacks, and fresh produce.",
             accentColor: Color(hex: "#1D9E75"),
             icon: "cart.fill",
             distanceNote: "~9 mi from venue"
@@ -521,7 +521,7 @@ struct ConventionData {
             address: "808 S Route 59, Ste 120, Naperville, IL 60540",
             category: .sports,
             coordinate: CLLocationCoordinate2D(latitude: 41.7562474, longitude: -88.2023907),
-            detail: "Youth activity on Thursday, July 2 (11:00 AM – 5:00 PM): pickleball, badminton, volleyball, and cricket nets. Food and drinks provided. Indoor acrylic courts, restrooms, water, lighting, and wheelchair accessible.",
+            detail: "Youth activity on Thursday, July 2 (11:00 AM – 5:00 PM): pickleball, badminton, volleyball, and cricket nets.",
             accentColor: Color(hex: "#166E3F"),
             icon: "sportscourt.fill",
             distanceNote: "Thu Jul 2 · 11:00 AM – 5:00 PM"

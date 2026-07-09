@@ -267,11 +267,11 @@ struct InfoTabContent: View {
 
     var faqContent: some View {
         VStack(spacing: 12) {
-            FAQItem(q: "What food is served?", a: "All meals are 100% vegetarian (Satvika). Traditional Havyaka cuisine is served including South Indian breakfasts, full rice lunches with sambar/rasam, and light dinners. Please inform organizers of any allergies.")
-            FAQItem(q: "Which airport should I fly into?", a: "Chicago O'Hare (ORD) is ~40 min drive and preferred. Chicago Midway (MDW) is ~50 min. Rental cars and rideshares are available at both.")
-            FAQItem(q: "What is the dress code?", a: "Traditional attire is encouraged for ceremonies and cultural events. Business casual is acceptable for daytime programs. A saree or kurta/dhoti is ideal for the opening ceremony and Yakshagana night.")
+            FAQItem(q: "What food is served?", a: "All meals are 100% vegetarian (Satvika). Traditional Havyaka cuisine is served including South Indian breakfasts, full rice lunches with sambar/rasam, and light dinners.")
+            FAQItem(q: "Which airport should I fly into?", a: "Chicago O'Hare (ORD) is ~40 min drive and preferred. Chicago Midway (MDW) is ~50 min.")
+            FAQItem(q: "What is the dress code?", a: "Traditional attire is encouraged for ceremonies and cultural events. Business casual is acceptable for daytime programs.")
             FAQItem(q: "Is there parking at the venue?", a: "Yes, ample free parking is available on the Rosary College Prep campus.")
-            FAQItem(q: "When does registration close?", a: "Early bird registration ended Feb 8, 2026. Standard registration is still open. Check haaconvention.org for current pricing.")
+            FAQItem(q: "When does registration close?", a: "Early bird registration ended Feb 8, 2026. Standard registration is still open.")
         }
     }
 

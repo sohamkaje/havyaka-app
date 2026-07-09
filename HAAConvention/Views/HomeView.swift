@@ -5,6 +5,7 @@ struct HomeView: View {
     @Binding var selectedTab: Int
     @Binding var moreSectionRequest: InfoAccountSection?
     @State private var timeRemaining = TimeComponents()
+    @State private var conventionHasStarted = false
     @State private var selectedAttraction: StarAttraction? = nil
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -90,21 +91,28 @@ struct HomeView: View {
     // MARK: - Countdown (seconds-level, fires every 1s)
     var countdownBar: some View {
         HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Convention starts in")
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
-                    .tracking(0.5)
-                    .foregroundColor(HAA.Colors.muted)
-            }
-            Spacer()
-            HStack(spacing: 2) {
-                countUnit(value: String(format: "%02d", timeRemaining.days),    label: "days")
-                colonSep
-                countUnit(value: String(format: "%02d", timeRemaining.hours),   label: "hrs")
-                colonSep
-                countUnit(value: String(format: "%02d", timeRemaining.minutes), label: "min")
-                colonSep
-                countUnit(value: String(format: "%02d", timeRemaining.seconds), label: "sec")
+            if conventionHasStarted {
+                Text("Convention has started!")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundColor(HAA.Colors.charcoal)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            } else {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Convention starts in")
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .tracking(0.5)
+                        .foregroundColor(HAA.Colors.muted)
+                }
+                Spacer()
+                HStack(spacing: 2) {
+                    countUnit(value: String(format: "%02d", timeRemaining.days),    label: "days")
+                    colonSep
+                    countUnit(value: String(format: "%02d", timeRemaining.hours),   label: "hrs")
+                    colonSep
+                    countUnit(value: String(format: "%02d", timeRemaining.minutes), label: "min")
+                    colonSep
+                    countUnit(value: String(format: "%02d", timeRemaining.seconds), label: "sec")
+                }
             }
         }
         .padding(.horizontal, HAA.Spacing.lg)
@@ -214,8 +222,10 @@ struct HomeView: View {
         let diff = target.timeIntervalSince(Date())
         guard diff > 0 else {
             timeRemaining = TimeComponents(days: 0, hours: 0, minutes: 0, seconds: 0)
+            conventionHasStarted = true
             return
         }
+        conventionHasStarted = false
         let total   = Int(diff)
         let seconds = total % 60
         let minutes = (total / 60) % 60

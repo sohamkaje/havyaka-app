@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		893618FA2FC07EBC0065D856 /* ConventionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618F92FC07EBC0065D856 /* ConventionModels.swift */; };
-		89SCHED12FC082000065D856 /* ScheduleData2026.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89SCHED02FC082000065D856 /* ScheduleData2026.swift */; };
 		893618FC2FC07ECB0065D856 /* AccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FB2FC07ECB0065D856 /* AccountView.swift */; };
 		893618FE2FC07ED20065D856 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FD2FC07ED20065D856 /* ContentView.swift */; };
 		893619002FC07EF70065D856 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 893618FF2FC07EF70065D856 /* HomeView.swift */; };
@@ -20,6 +19,7 @@
 		8936190C2FC081300065D856 /* PhotosAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8936190B2FC081300065D856 /* PhotosAPI.swift */; };
 		8936190E2FC081400065D856 /* NetworkMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8936190D2FC081400065D856 /* NetworkMonitor.swift */; };
 		89F9AF812FE725B7007A3F36 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89F9AF802FE725B7007A3F36 /* Assets.xcassets */; };
+		89SCHED12FC082000065D856 /* ScheduleData2026.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89SCHED02FC082000065D856 /* ScheduleData2026.swift */; };
 		A101 /* HAAConventionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B101 /* HAAConventionApp.swift */; };
 		A102 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B102 /* DesignSystem.swift */; };
 		A107 /* ScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B107 /* ScheduleView.swift */; };
@@ -28,7 +28,6 @@
 
 /* Begin PBXFileReference section */
 		893618F92FC07EBC0065D856 /* ConventionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConventionModels.swift; sourceTree = "<group>"; };
-		89SCHED02FC082000065D856 /* ScheduleData2026.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleData2026.swift; sourceTree = "<group>"; };
 		893618FB2FC07ECB0065D856 /* AccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountView.swift; sourceTree = "<group>"; };
 		893618FD2FC07ED20065D856 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		893618FF2FC07EF70065D856 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -40,6 +39,7 @@
 		8936190B2FC081300065D856 /* PhotosAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosAPI.swift; sourceTree = "<group>"; };
 		8936190D2FC081400065D856 /* NetworkMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitor.swift; sourceTree = "<group>"; };
 		89F9AF802FE725B7007A3F36 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		89SCHED02FC082000065D856 /* ScheduleData2026.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleData2026.swift; sourceTree = "<group>"; };
 		B101 /* HAAConventionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HAAConventionApp.swift; sourceTree = "<group>"; };
 		B102 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		B107 /* ScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleView.swift; sourceTree = "<group>"; };
